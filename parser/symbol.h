@@ -1,5 +1,5 @@
 #pragma once
-#include "scanner.hpp"
+#include "token.hpp"
 #include <memory>
 #include <unordered_set>
 
@@ -13,6 +13,19 @@ public:
     static int getId();
     int id;
 };
+
+// hash function for Symbol
+namespace std
+{
+    template <>
+    struct hash<Symbol>
+    {
+        size_t operator()(const Symbol &symbol) const
+        {
+            return hash<int>()(symbol.id);
+        }
+    };
+}
 
 class Terminal : public Symbol
 {
