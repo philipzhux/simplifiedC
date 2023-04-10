@@ -50,13 +50,16 @@ enum Token
     ANDAND,
     OROR,
     COMMA,
+    A,
+    B,
+    $,
     UNKNOWN
 };
 
 struct NFAState
 {
     // the transitions of the state, a map of <symbol, a stack of statePtrs>
-    std::unordered_map<char, std::vector<StatePtr>> transitions;
+    std::unordered_map<char, std::vector<StatePtr> > transitions;
     Token token = UNKNOWN;
 };
 
