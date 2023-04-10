@@ -26,12 +26,19 @@ public:
     Terminal endSymbol;
     int startProductionId;
     std::unordered_set<int> nullableSymbols;
+    // production zero is the augmented production (goal)
+    // reduce according to production zero is the accept state
+    
+    
     std::vector<Production> productions;
     std::vector<ConfigurationSet> configurationSets;
+    // i>0: shift to state i; i=0: accept (reduce 0); i<0: reduce according to production -i
     std::unordered_map<std::pair<int, int>, int> actionTable;
+    // only applied to non-terminal symbols and reduce actions
     std::unordered_map<std::pair<int, int>, int> gotoTable;
     void printProductions() const;
     void printConfigurationSets() const;
+    void printConfigurationSet(const ConfigurationSet &configurationSet) const;
     void printActionTable() const;
     void printGotoTable() const;
     void build();
