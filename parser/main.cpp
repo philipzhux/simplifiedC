@@ -33,13 +33,14 @@ int main()
     // Terminal _div_op("DIV_OP", DIV_OP, Symbol::getId());
     // Terminal _and_op("AND_OP", AND_OP, Symbol::getId());
     // Terminal _or_op("OR_OP", OR_OP, Symbol::getId());
-    NonTerminal _sPrime("S'",Symbol::getId());
-    NonTerminal _s("S",Symbol::getId());
-    NonTerminal _x("X",Symbol::getId());
-    Terminal _$("$",$,Symbol::getId());
-    Terminal _a("a",A,Symbol::getId());
-    Terminal _b("b",B,Symbol::getId());
-    Parser parser(_sPrime, {_s},_$);
+    NonTerminal _sPrime("S'", Symbol::getId());
+    NonTerminal _s("S", Symbol::getId());
+    NonTerminal _x("X", Symbol::getId());
+    Terminal _$("$", $, Symbol::getId());
+    Terminal _a("a", A, Symbol::getId());
+    Terminal _b("b", B, Symbol::getId());
+
+    Parser parser(_sPrime, {_s}, _$);
     parser.addProduction(_s, {_x, _x});
     parser.addProduction(_x, {_a, _x});
     parser.addProduction(_x, {_b});
@@ -48,17 +49,12 @@ int main()
     parser.printConfigurationSets();
     parser.printActionTable();
     parser.printGotoTable();
-    if(!parser.parse({_b, _a, _a, _b, _$})){
-        std::cout << "Error" << std::endl;
-    };
-
-
-
-    
-
-    
-
-
-
-    
+    if (!parser.parse({_b, _b}))
+    {
+        std::cout << "Syntax error" << std::endl;
+    }
+    else
+    {
+        std::cout << "Accepted" << std::endl;
+    }
 }
