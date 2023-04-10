@@ -49,7 +49,9 @@ int main()
     parser.printConfigurationSets();
     parser.printActionTable();
     parser.printGotoTable();
-    if (!parser.parse({_b, _b}))
+    
+    // sample LR(1) grammar from Stanford CS143 lecture 110 in summer 2012
+    if (!parser.parse({_b, _a, _a, _b}))
     {
         std::cout << "Syntax error" << std::endl;
     }
