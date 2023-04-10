@@ -8,7 +8,6 @@
 #include <cassert>
 #include <algorithm>
 #include "production.h"
-#include "symbol.h"
 
 class Configuration
 {
@@ -21,5 +20,34 @@ public:
     bool operator==(const Configuration &other) const;
     bool isComplete();
     Symbol getSymbolAfterDot();
-    std::vector<Configuration> closure(const Parser &parser);
+    // add hash support for class Configuration
+    friend struct std::hash<Configuration>;
+};
+
+// implement hash function for class Configuration
+namespace std
+{
+    template <>
+    struct hash<Configuration>
+    {
+        size_t operator()(const Configuration &configuration) const
+        {
+            size_t res = 17;
+            res = res * 31 + hash<int>()( configuration.production->lhs.id);
+            res = res * 31 + hash<int>()( configuration.production->rhs[configuration.dotPosition].id);
+            res = res * 31 + hash<int>()( configuration.lookahead.id);
+            return res;
+        }
+    };
+}
+
+
+class ConfigurationSet
+{
+public:
+    ConfigurationSet(std::vector<Configuration> configurations, int id);
+    static int getId();
+    bool operator==(const ConfigurationSet &other) const;
+    std::unordered_set<Configuration> configurations;
+    int id;
 };

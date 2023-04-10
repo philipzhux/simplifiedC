@@ -9,6 +9,12 @@ bool Symbol::operator==(const Symbol &other) const
     return id == other.id;
 }
 
+int Symbol::getId()
+{
+    static int id = 0;
+    return id++;
+}
+
 NonTerminal::NonTerminal(std::string name, int id) : Symbol(name, false, id) {}
 
 

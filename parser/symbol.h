@@ -1,10 +1,8 @@
 #pragma once
 #include "scanner.hpp"
-#include "parser.h"
 #include <memory>
 #include <unordered_set>
 
-class ConfigurationSet;
 class Symbol
 {
 public:
@@ -12,12 +10,7 @@ public:
     bool operator==(const Symbol &other) const;
     bool isTerminal;
     std::string humanReadableName;
-    static int getId()
-    {
-        static int id = 0;
-        return id++;
-    }
-
+    static int getId();
     int id;
 };
 

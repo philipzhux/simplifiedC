@@ -1,11 +1,66 @@
 #include "parser.h"
-#include "configuration.h"
+#include <iostream>
+
+Parser::Parser(Symbol startLhs, std::vector<Symbol> startRhs, Terminal endSymbol): endSymbol(endSymbol)
+{
+    startProductionId = addProduction(startLhs, startRhs);
+}
+
+
+
+std::vector<Configuration> Parser::getClosure(const Configuration &configuration) const
+{
+    std::vector<Configuration> closure;
+    closure.push_back(configuration);
+    bool changed = true;
+    while (changed)
+    {
+        changed = false;
+        for (auto configuration : closure)
+        {
+            if (configuration.isComplete())
+            {
+                continue;
+            }
+            Symbol symbolAfterDot = configuration.getSymbolAfterDot();
+            if (!symbolAfterDot.isTerminal)
+            {
+                for (auto const &production : productions)
+                {
+                    if (production.lhs == symbolAfterDot)
+                    {
+                        std::vector<Symbol> followSymbols;
+                        for (int i = configuration.dotPosition + 1; i < configuration.production->rhs.size(); i++)
+                        {
+                            followSymbols.push_back(configuration.production->rhs[i]);
+                        }
+                        followSymbols.push_back(configuration.lookahead);
+                        for (auto lookahead : getFirstSet(followSymbols))
+                        {
+                            Configuration newConfiguration = Configuration(std::make_shared<Production>(production), 0, lookahead);
+
+                            if (std::find(closure.begin(), closure.end(), newConfiguration) == closure.end())
+                            {
+                                closure.push_back(newConfiguration);
+                                changed = true;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return closure;
+}
+
+
+
 
 void Parser::build()
 {
     // build configuration sets and action table
-    Configuration initialConfig = Configuration(std::make_shared<Production>(startProduction), 0, endSymbol);
-    ConfigurationSet initialConfigurationSet = ConfigurationSet(initialConfig.closure(*this), ConfigurationSet::getId());
+    Configuration initialConfig = Configuration(std::make_shared<Production>(productions[startProductionId]), 0, endSymbol);
+    ConfigurationSet initialConfigurationSet = ConfigurationSet(getClosure(initialConfig), ConfigurationSet::getId());
     configurationSets.push_back(initialConfigurationSet);
     while (true)
     {
@@ -19,7 +74,7 @@ void Parser::build()
                     continue;
                 }
                 std::pair<Symbol, Configuration> transition = configuration.getTransition();
-                std::vector<Configuration> closure = transition.second.closure(*this);
+                std::vector<Configuration> closure = getClosure(transition.second);
                 ConfigurationSet newConfigurationSet = ConfigurationSet(closure, ConfigurationSet::getId());
                 if (std::find(configurationSets.begin(), configurationSets.end(), newConfigurationSet) == configurationSets.end())
                 {
@@ -73,12 +128,12 @@ bool Parser::parse(std::vector<Symbol> input)
         else if (nextState < 0)
         {
             // pop series of states from the stack according to the rhs of the production
-            for (int j = 0; j < productionMap[-nextState].rhs.size(); j++)
+            for (int j = 0; j < productions[-nextState].rhs.size(); j++)
             {
                 stack.pop_back();
             }
             // push the next state according to the goto table
-            int nextState = gotoTable[std::make_pair(stack.back(), productionMap[-nextState].lhs.id)];
+            int nextState = gotoTable[std::make_pair(stack.back(), productions[-nextState].lhs.id)];
             stack.push_back(nextState);
         }
         else
@@ -88,21 +143,22 @@ bool Parser::parse(std::vector<Symbol> input)
     }
 }
 
-void Parser::addProduction(Production production)
+int Parser::addProduction(Symbol lhs, std::vector<Symbol> rhs)
 {
+    Production production = Production(lhs, rhs, productions.size());
     if (production.rhs.size() == 0)
     {
-        nullableSymbols.insert(production.lhs);
+        nullableSymbols.insert(production.lhs.id);
     }
-    productionMap[production.id] = production;
+    productions.push_back(production);
+    return production.id;
 }
 
 std::vector<Symbol> Parser::getFirstSet(Symbol symbol) const
 {
     std::vector<Symbol> firstSet;
-    for (auto const &productionPair : productionMap)
+    for (auto const &production : productions)
     {
-        auto const &production = productionPair.second;
         if (production.lhs == symbol)
         {
             if (production.rhs[0].isTerminal)
@@ -126,10 +182,66 @@ std::vector<Symbol> Parser::getFirstSet(const std::vector<Symbol> &symbols) cons
     {
         std::vector<Symbol> firstSetOfSymbol = getFirstSet(symbol);
         firstSet.insert(firstSet.end(), firstSetOfSymbol.begin(), firstSetOfSymbol.end());
-        if (nullableSymbols.count(symbol) == 0)
+        if (nullableSymbols.count(symbol.id) == 0)
         {
             break;
         }
     }
     return firstSet;
+}
+
+void Parser::printProductions() const
+{
+    for (auto const &production : productions)
+    {
+        std::cout << production.lhs.humanReadableName << " -> ";
+        for (auto const &symbol : production.rhs)
+        {
+            std::cout << symbol.humanReadableName << " ";
+        }
+        std::cout << std::endl;
+    }
+}
+
+void Parser::printConfigurationSets() const
+{
+    for (auto const &configurationSet : configurationSets)
+    {
+        std::cout << "Configuration Set " << configurationSet.id << std::endl;
+        for (auto const &configuration : configurationSet.configurations)
+        {
+            std::cout << configuration.production->lhs.humanReadableName << " -> ";
+            for (int i = 0; i < configuration.production->rhs.size(); i++)
+            {
+                if (i == configuration.dotPosition)
+                {
+                    std::cout << ". ";
+                }
+                std::cout << configuration.production->rhs[i].humanReadableName << " ";
+            }
+            if (configuration.dotPosition == configuration.production->rhs.size())
+            {
+                std::cout << ".";
+            }
+            std::cout << ", " << configuration.lookahead.humanReadableName << std::endl;
+        }
+    }
+}
+
+void Parser::printActionTable() const
+{
+    std::cout << "Action Table" << std::endl;
+    for (auto const &entry : actionTable)
+    {
+        std::cout << entry.first.first << " " << entry.first.second << " " << entry.second << std::endl;
+    }
+}
+
+void Parser::printGotoTable() const
+{
+    std::cout << "Goto Table" << std::endl;
+    for (auto const &entry : gotoTable)
+    {
+        std::cout << entry.first.first << " " << entry.first.second << " " << entry.second << std::endl;
+    }
 }

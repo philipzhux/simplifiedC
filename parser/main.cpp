@@ -4,8 +4,8 @@
 int main()
 {
 
-    Scanner scanner("test.txt");
-    scanner.compile();
+    // Scanner scanner("test.txt");
+    // scanner.compile();
     // convert enum token to terminal symbols
     // Terminal _int("INT", INT, Symbol::getId());
     // Terminal _main("MAIN", MAIN, Symbol::getId());
@@ -39,11 +39,15 @@ int main()
     Terminal _$("$",$,Symbol::getId());
     Terminal _a("a",A,Symbol::getId());
     Terminal _b("b",B,Symbol::getId());
-    Parser parser({_sPrime, {_s},0},_$);
-    parser.addProduction({_s, {_x, _x},1});
-    parser.addProduction({_x, {_a, _x},2});
-    parser.addProduction({_x, {_b},3});
+    Parser parser(_sPrime, {_s},_$);
+    parser.addProduction(_s, {_x, _x});
+    parser.addProduction(_x, {_a, _x});
+    parser.addProduction(_x, {_b});
     parser.build();
+    parser.printProductions();
+    parser.printConfigurationSets();
+    parser.printActionTable();
+    parser.printGotoTable();
     if(!parser.parse({_b, _a, _a, _b, _$})){
         std::cout << "Error" << std::endl;
     };

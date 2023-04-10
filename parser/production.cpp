@@ -9,3 +9,8 @@ bool Production::operator==(const Production &other) const
     return id == other.id;
 }
 
+int Production::getId()
+{
+    static int i = 0;
+    return i++;
+}
