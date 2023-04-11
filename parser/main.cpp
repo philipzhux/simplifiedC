@@ -170,6 +170,7 @@ int main()
     parser.addProduction(_exp9, {_id});
     parser.addProduction(_exp9, {_lpar, _exp, _rpar});
     parser.build();
+    std::cout<< "parser built."<< std::endl;
 
 }
 

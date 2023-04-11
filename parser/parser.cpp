@@ -120,31 +120,34 @@ void Parser::build()
             }
             for (const auto& transition : transitionMap)
             {
-                ConfigurationSet newConfigurationSet = ConfigurationSet(transition.second, ConfigurationSet::getId());
-                const auto& found = std::find(configurationSets.begin(), configurationSets.end(), newConfigurationSet);
-                if (found == configurationSets.end())
+                //ConfigurationSet newConfigurationSet = ConfigurationSet(transition.second, ConfigurationSet::getId());
+                int newConfigurationSetId = -1;
+                for (const auto& configSet: configurationSets)
                 {
-                    configurationSets.push_back(newConfigurationSet);
-                    std::cout<<"new configuration set: "<<newConfigurationSet.id<<std::endl;
-                    // printConfigurationSet(newConfigurationSet);
-                    // changed = true;
+                    if (configSet.configurations == transition.second)
+                    {
+                        newConfigurationSetId = configSet.id;
+                        break;
+                    }
                 }
-                else
+                if (newConfigurationSetId == -1)
                 {
-                    newConfigurationSet = *found;
-                    ConfigurationSet::rollbackId();
+                    newConfigurationSetId = ConfigurationSet::getId();
+                    configurationSets.push_back(ConfigurationSet(transition.second, newConfigurationSetId));
+                    std::cout << "new configuration set: " << newConfigurationSetId << std::endl;
+                    changed = true;
                 }
+                
                 std::unordered_map<std::pair<int,int>,int>& targetTable = transition.first.isTerminal ? actionTable : gotoTable;
                 // printActionTable();
                 // printGotoTable();
                 if (targetTable.count(std::make_pair(configurationSets[i].id, transition.first.id)) == 0)
                 {
-                    changed = true;
-                    targetTable[std::make_pair(configurationSets[i].id, transition.first.id)] = newConfigurationSet.id;
+                    targetTable[std::make_pair(configurationSets[i].id, transition.first.id)] = newConfigurationSetId;
                 }
                 else
                 {
-                    if (targetTable[std::make_pair(configurationSets[i].id, transition.first.id)] != newConfigurationSet.id)
+                    if (targetTable[std::make_pair(configurationSets[i].id, transition.first.id)] != newConfigurationSetId)
                     {
                         if(transition.first.isTerminal)
                         {
@@ -152,7 +155,7 @@ void Parser::build()
                             std::cout << "State: " << configurationSets[i].id << std::endl;
                             std::cout << "Symbol: " << transition.first.humanReadableName << std::endl;
                             std::cout << "Existing action: " << targetTable[std::make_pair(configurationSets[i].id, transition.first.id)] << std::endl;
-                            std::cout << "New action: " << newConfigurationSet.id << std::endl;
+                            std::cout << "New action: " << newConfigurationSetId << std::endl;
                         }
                         else
                         {
@@ -160,7 +163,7 @@ void Parser::build()
                             std::cout << "State: " << configurationSets[i].id << std::endl;
                             std::cout << "Symbol: " << transition.first.humanReadableName << std::endl;
                             std::cout << "Existing goto: " << targetTable[std::make_pair(configurationSets[i].id, transition.first.id)] << std::endl;
-                            std::cout << "New goto: " << newConfigurationSet.id << std::endl;
+                            std::cout << "New goto: " << newConfigurationSetId << std::endl;
                         }
                         
                         printConfigurationSets();

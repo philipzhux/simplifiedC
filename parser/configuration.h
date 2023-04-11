@@ -34,9 +34,7 @@ namespace std
         size_t operator()(const Configuration &configuration) const
         {
             size_t res = 17;
-            res = res * 31 + hash<int>()( configuration.production->lhs.id);
-             for(const auto& symbol : configuration.production->rhs)
-                res = res * 31 + hash<int>()(symbol.id);
+            res = res * 31 + hash<int>()(configuration.production->id);
             res = res * 31 + hash<int>()(configuration.dotPosition);
             for(const auto& lookahead : configuration.lookaheads)
                 res = res * 31 + hash<int>()(lookahead.id);
