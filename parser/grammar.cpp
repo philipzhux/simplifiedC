@@ -1,17 +1,10 @@
 #include "grammar.h"
+#include <stdexcept>
 
-inline bool exists_test(const std::string &name)
-{
-    std::ifstream f(name.c_str());
-    return f.good();
-}
+
 
 void grammar::buildGrammar(std::string path)
 {
-    if (::exists_test(path)){
-        // std::cout << "Imported grammar from " << path << std::endl;
-        return;
-    }
     Terminal _$("$", $, Symbol::getId());
     Terminal _int("INT", INT, Symbol::getId());
     Terminal _semi("SEMI", SEMI, Symbol::getId());
@@ -199,9 +192,9 @@ void grammar::buildGrammar(std::string path)
 
 parserWrapper::parserWrapper(std::string parserStatePath)
 {
-    ::grammar::buildGrammar(parserStatePath);
     std::ifstream is(parserStatePath);
+    if(!is.good())
+        throw std::runtime_error("Cannot open parser state file: " + parserStatePath);
     cereal::XMLInputArchive archive(is);
     archive(parser, tokenToTerminal);
-    
 }

@@ -3,6 +3,7 @@
 #include <map>
 #include <cereal/archives/xml.hpp>
 #include <fstream>
+
 namespace grammar
 {
  void buildGrammar(std::string);

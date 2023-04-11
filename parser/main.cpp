@@ -5,10 +5,20 @@
 #include <fstream>
 #include "grammar.h"
 
+inline bool exists_test(const std::string &name)
+{
+    std::ifstream f(name.c_str());
+    return f.good();
+}
+
 int main()
 {
     std::string parserStatePath = "parser.xml";
-    
+
+    if (!exists_test(parserStatePath))
+    {
+        grammar::buildGrammar(parserStatePath);
+    }
 
     {
         // parser scope
@@ -35,6 +45,7 @@ int main()
             }
             
         }
+
         wrapper.parser.parse(symbols);
     }
 }
