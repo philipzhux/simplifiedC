@@ -2,6 +2,8 @@
 #include "token.hpp"
 #include <memory>
 #include <unordered_set>
+// non-linux systems need <string> as not always included by <unordered_set>
+#include <string>
 
 /// @brief A symbol is a terminal or non-terminal symbol.
 class Symbol
