@@ -26,6 +26,7 @@ public:
     Parser(Symbol startLhs, std::vector<Symbol> startRhs, Terminal endSymbol);
     Terminal endSymbol;
     int startProductionId;
+    std::unordered_map<Symbol, std::unordered_set<Symbol> > firstSetMemo;
     std::unordered_set<int> nullableSymbols;
     // production zero is the augmented production (goal)
     // reduce according to production zero is the accept state
@@ -44,9 +45,9 @@ public:
     void build();
     bool parse(std::vector<Symbol> input);
     int addProduction(Symbol lhs, std::vector<Symbol> rhs);
-    std::vector<Configuration> getClosure(const Configuration &configuration) const;
-    std::vector<Symbol> getFirstSet(Symbol symbol) const;
-    std::vector<Symbol> getFirstSet(const std::vector<Symbol> &symbols) const;
+    std::vector<Configuration> getClosure(const Configuration &configuration);
+    std::unordered_set<Symbol> getFirstSet(Symbol symbol);
+    std::unordered_set<Symbol> getFirstSet(const std::vector<Symbol> &symbols);
 
 };
 

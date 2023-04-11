@@ -12,7 +12,7 @@ Parser::Parser(Symbol startLhs, std::vector<Symbol> startRhs, Terminal endSymbol
 /// @brief get the closure of a configuration
 /// @param initConfiguration the initial configuration
 /// @return a vector of configurations that are in the closure of initConfiguration
-std::vector<Configuration> Parser::getClosure(const Configuration &initConfiguration) const
+std::vector<Configuration> Parser::getClosure(const Configuration &initConfiguration)
 {
     std::vector<Configuration> closure;
     closure.push_back(initConfiguration);
@@ -257,15 +257,19 @@ int Parser::addProduction(Symbol lhs, std::vector<Symbol> rhs)
 /// @brief get the first set of a symbol
 /// @details this function returns the first set of a symbol
 /// @param symbol the symbol
-/// @return a vector that contains the first set of the symbol
-std::vector<Symbol> Parser::getFirstSet(Symbol symbol) const
+/// @return a hashed set of symbols
+std::unordered_set<Symbol> Parser::getFirstSet(Symbol symbol)
 {
 
     if (symbol.isTerminal)
     {
         return {symbol};
     }
-    std::vector<Symbol> firstSet;
+    if (firstSetMemo.count(symbol) != 0)
+    {
+        return firstSetMemo.at(symbol);
+    }
+    std::unordered_set<Symbol> firstSet;
     for (const auto& production : productions)
     {
         if (production->lhs == symbol)
@@ -274,12 +278,12 @@ std::vector<Symbol> Parser::getFirstSet(Symbol symbol) const
             {
                 if (production->rhs[i].isTerminal)
                 {
-                    firstSet.push_back(production->rhs[0]);
+                    firstSet.insert(production->rhs[0]);
                 }
                 else
                 {
-                    std::vector<Symbol> firstSetOfRhs = getFirstSet(production->rhs[i]);
-                    firstSet.insert(firstSet.end(), firstSetOfRhs.begin(), firstSetOfRhs.end());
+                    std::unordered_set<Symbol> firstSetOfRhs = getFirstSet(production->rhs[i]);
+                    firstSet.insert(firstSetOfRhs.begin(), firstSetOfRhs.end());
                 }
                 if (nullableSymbols.count(production->rhs[i].id) == 0)
                 {
@@ -288,20 +292,21 @@ std::vector<Symbol> Parser::getFirstSet(Symbol symbol) const
             }
         }
     }
+    firstSetMemo[symbol] = firstSet;
     return firstSet;
 }
 
 /// @brief get the first set of a vector of symbols
 /// @details this function returns the first set of a vector of symbols
 /// @param symbols the vector of symbols
-/// @return a vector that contains the first set of the vector of symbols
-std::vector<Symbol> Parser::getFirstSet(const std::vector<Symbol> &symbols) const
+/// @return a hash set that contains the first set of the vector of symbols
+std::unordered_set<Symbol> Parser::getFirstSet(const std::vector<Symbol> &symbols)
 {
-    std::vector<Symbol> firstSet;
+    std::unordered_set<Symbol> firstSet;
     for (const auto& symbol : symbols)
     {
-        std::vector<Symbol> firstSetOfSymbol = getFirstSet(symbol);
-        firstSet.insert(firstSet.end(), firstSetOfSymbol.begin(), firstSetOfSymbol.end());
+        std::unordered_set<Symbol> firstSetOfSymbol = getFirstSet(symbol);
+        firstSet.insert(firstSetOfSymbol.begin(), firstSetOfSymbol.end());
         if (nullableSymbols.count(symbol.id) == 0)
         {
             break;
