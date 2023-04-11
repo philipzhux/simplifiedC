@@ -1,10 +1,16 @@
 #pragma once
 
 #include <string>
+#include <cereal/types/string.hpp>
+#include <cereal/types/utility.hpp>
 #include <vector>
+#include <cereal/types/vector.hpp>
 #include <unordered_set>
+#include <cereal/types/unordered_set.hpp>
 #include <unordered_map>
+#include <cereal/types/unordered_map.hpp>
 #include <memory>
+#include <cereal/types/memory.hpp>
 #include <cassert>
 #include <algorithm>
 #include "production.h"
@@ -13,6 +19,7 @@
 class Configuration
 {
 public:
+    Configuration();
     Configuration(std::shared_ptr<Production> production, int dotPosition, std::unordered_set<Symbol> lookaheads);
     std::shared_ptr<Production> production;
     int dotPosition;
@@ -23,6 +30,15 @@ public:
     Symbol getSymbolAfterDot();
     // add hash support for class Configuration
     friend struct std::hash<Configuration>;
+
+    template <class Archive>
+    void serialize(Archive &archive)
+    {
+        // serialize things by passing them to the archive
+        archive(production, dotPosition, lookaheads);
+        
+    }
+
 };
 
 // implement hash function for class Configuration
@@ -51,6 +67,7 @@ namespace std
 class ConfigurationSet
 {
 public:
+    ConfigurationSet();
     ConfigurationSet(std::unordered_set<Configuration> configurations, int id);
     static int controlId(bool increment);
     static int getId();
@@ -58,4 +75,11 @@ public:
     bool operator==(const ConfigurationSet &other) const;
     std::unordered_set<Configuration> configurations;
     int id;
+
+    template <class Archive>
+    void serialize(Archive &archive)
+    {
+        // serialize things by passing them to the archive
+        archive(configurations, id);
+    }
 };

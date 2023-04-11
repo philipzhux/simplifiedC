@@ -1,5 +1,8 @@
 #include "configuration.h"
 
+Configuration::Configuration(){}
+ConfigurationSet::ConfigurationSet(){}
+
 Configuration::Configuration(std::shared_ptr<Production> production, int dotPosition, std::unordered_set<Symbol> lookaheads) : production(production), dotPosition(dotPosition), lookaheads(lookaheads) {}
 
 /// @brief Get the transition symbol and the next configuration.

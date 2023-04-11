@@ -1,6 +1,8 @@
 #include "parser.h"
 #include <iostream>
 
+Parser::Parser(){}
+
 Parser::Parser(Symbol startLhs, std::vector<Symbol> startRhs, Terminal endSymbol) : endSymbol(endSymbol)
 {
     startProductionId = addProduction(startLhs, startRhs);
@@ -127,7 +129,7 @@ void Parser::build()
                 if (found == configurationSets.end())
                 {
                     configurationSets.push_back(newConfigurationSet);
-                    std::cout<<"new configuration set: "<<newConfigurationSet.id<<" rep ="<< repCount << std::endl;
+                    // std::cout<<"new configuration set: "<<newConfigurationSet.id<<" rep ="<< repCount << std::endl;
                     // printConfigurationSet(newConfigurationSet);
                     // changed = true;
                 }
@@ -203,6 +205,7 @@ void Parser::build()
 bool Parser::parse(std::vector<Symbol> input)
 {
     std::vector<int> stack;
+    std::vector<Symbol> symbolStack;
     stack.push_back(0);
     input.push_back(endSymbol);
     int inputCursor = 0;
@@ -222,22 +225,31 @@ bool Parser::parse(std::vector<Symbol> input)
         if (nextState > 0)
         {
             stack.push_back(nextState);
+            symbolStack.push_back(currentSymbol);
             inputCursor++;
             // print shift message
-            std::cout << std::endl;
-            std::cout << "Shift to state " << nextState << std::endl;
+            std::cout << "state: " << currentState << "\t";
+            std::cout << "next type: " << currentSymbol.humanReadableName << "\t";
+            std::cout << "shift to state " << nextState << std::endl;
+            std::cout << "current situation: ";
+            // print current situation according to the stack
+            for (int i = 0; i < symbolStack.size(); i++)
+            {
+                std::cout << symbolStack[i].humanReadableName << " ";
+            }
+            std::cout << "|" << std::endl;
+            
         }
         else if (nextState < 0)
         {   
             int production = -nextState;
             // print reduce message
-            std::cout << std::endl;
-            std::cout << "Reduce by production " << production << std::endl;
 
             // pop series of states from the stack according to the rhs of the production
             for (int j = 0; j < productions[production]->rhs.size(); j++)
             {
                 stack.pop_back();
+                symbolStack.pop_back();
             }
             
             if(gotoTable.count(std::make_pair(stack.back(), productions[production]->lhs.id)) == 0)
@@ -251,16 +263,42 @@ bool Parser::parse(std::vector<Symbol> input)
 
             // push the next state according to the goto table
             nextState = gotoTable[std::make_pair(stack.back(), productions[production]->lhs.id)];
-            // print goto message
-            std::cout << "Goto state " << nextState << std::endl;
             
             stack.push_back(nextState);
-           
+            symbolStack.push_back(productions[production]->lhs);
+
+            /*
+            Sample shift message
+            state: 49	next type: SEMI		reduce by grammar 9: declaration->ID 
+            current situation: INT | declaration
+            */
+            std::cout << "state: " << currentState << "\t";
+            std::cout << "next type: " << currentSymbol.humanReadableName << "\t";
+            std::cout << "reduce by grammar " << production << ": " << productions[production]->lhs.humanReadableName << "->";
+            for (int j = 0; j < productions[production]->rhs.size(); j++)
+            {
+                std::cout << productions[production]->rhs[j].humanReadableName << " ";
+            }
+            if (productions[production]->rhs.size() == 0)
+            {
+                std::cout << "{}";
+            }
+            std::cout << std::endl;
+            std::cout << "current situation: ";
+            // print current situation according to the stack
+            for (int i = 0; i < symbolStack.size()-1; i++)
+            {
+                std::cout << symbolStack[i].humanReadableName << " ";
+            }
+            std::cout << "| " <<  symbolStack.back().humanReadableName << std::endl;
         }
         else
         {
+            std::cout << "Reduce by production " << nextState << std::endl;
+            std::cout << "Accepted" << std::endl;
             return true;
         }
+        std::cout << std::endl;
     }
     return false;
 }

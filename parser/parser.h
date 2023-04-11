@@ -1,7 +1,6 @@
 #pragma once
 #include "configuration.h"
 
-
 // add hash support for std::pair<int,int> type
 namespace std
 {
@@ -23,18 +22,19 @@ namespace std
 class Parser
 {
 public:
+    Parser();
     Parser(Symbol startLhs, std::vector<Symbol> startRhs, Terminal endSymbol);
     Terminal endSymbol;
     int startProductionId;
     int repCount;
     // track the path of recursion in building first set to avoid infinite recursion
     std::unordered_set<Symbol> firstSetRecursionMemo;
-    std::unordered_map<Symbol, std::unordered_set<Symbol> > firstSetMemo;
+    std::unordered_map<Symbol, std::unordered_set<Symbol>> firstSetMemo;
     std::unordered_set<int> nullableSymbols;
     // production zero is the augmented production (goal)
     // reduce according to production zero is the accept state
-    
-    std::vector<std::shared_ptr<Production> > productions;
+
+    std::vector<std::shared_ptr<Production>> productions;
     std::vector<ConfigurationSet> configurationSets;
     // i>0: shift to state i; i=0: accept (reduce 0); i<0: reduce according to production -i
     std::unordered_map<std::pair<int, int>, int> actionTable;
@@ -52,6 +52,12 @@ public:
     std::unordered_set<Symbol> getFirstSet(Symbol symbol);
     std::unordered_set<Symbol> getFirstSet(const std::vector<Symbol> &symbols);
 
+    template <class Archive>
+    void serialize(Archive &archive)
+    {
+        // serialize things by passing them to the archive
+        archive(endSymbol, startProductionId, repCount, firstSetRecursionMemo, firstSetRecursionMemo, nullableSymbols,
+                productions, configurationSets, actionTable, gotoTable); 
+        
+    }
 };
-
-
