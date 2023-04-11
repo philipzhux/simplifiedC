@@ -128,6 +128,7 @@ void Parser::build()
                     if (configSet.configurations == transition.second)
                     {
                         newConfigurationSetId = configSet.id;
+                        repCount++;
                         break;
                     }
                 }
