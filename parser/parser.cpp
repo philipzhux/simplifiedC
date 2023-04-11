@@ -97,7 +97,8 @@ void Parser::build()
 {
     // build configuration sets and action table
     Configuration initialConfig = Configuration(productions[startProductionId], 0, {endSymbol});
-    ConfigurationSet initialConfigurationSet = ConfigurationSet(getClosure(initialConfig), ConfigurationSet::getId());
+    std::vector<Configuration> initialClosure = getClosure(initialConfig);
+    ConfigurationSet initialConfigurationSet = ConfigurationSet({initialClosure.begin(),initialClosure.end()}, ConfigurationSet::getId());
     configurationSets.push_back(initialConfigurationSet);
     while (true)
     {
@@ -106,6 +107,7 @@ void Parser::build()
         for (int i = 0; i < size; i++)
         {
             // auto configurationSet = configurationSets[i];
+            std::unordered_map<Symbol, std::unordered_set<Configuration>> transitionMap;
             for (const auto& configuration : configurationSets[i].configurations)
             {
                 if (configuration.isComplete())
@@ -114,11 +116,17 @@ void Parser::build()
                 }
                 std::pair<Symbol, Configuration> transition = configuration.getTransition();
                 std::vector<Configuration> closure = getClosure(transition.second);
-                ConfigurationSet newConfigurationSet = ConfigurationSet(closure, ConfigurationSet::getId());
+                transitionMap[transition.first].insert(closure.begin(), closure.end());
+            }
+            for (const auto& transition : transitionMap)
+            {
+                ConfigurationSet newConfigurationSet = ConfigurationSet(transition.second, ConfigurationSet::getId());
                 const auto& found = std::find(configurationSets.begin(), configurationSets.end(), newConfigurationSet);
                 if (found == configurationSets.end())
                 {
                     configurationSets.push_back(newConfigurationSet);
+                    std::cout<<"new configuration set: "<<newConfigurationSet.id<<std::endl;
+                    // printConfigurationSet(newConfigurationSet);
                     // changed = true;
                 }
                 else
@@ -127,6 +135,8 @@ void Parser::build()
                     ConfigurationSet::rollbackId();
                 }
                 std::unordered_map<std::pair<int,int>,int>& targetTable = transition.first.isTerminal ? actionTable : gotoTable;
+                // printActionTable();
+                // printGotoTable();
                 if (targetTable.count(std::make_pair(configurationSets[i].id, transition.first.id)) == 0)
                 {
                     changed = true;
@@ -136,16 +146,30 @@ void Parser::build()
                 {
                     if (targetTable[std::make_pair(configurationSets[i].id, transition.first.id)] != newConfigurationSet.id)
                     {
-                        std::cout << "Error: conflict in action table" << std::endl;
-                        std::cout << "State: " << configurationSets[i].id << std::endl;
-                        std::cout << "Symbol: " << transition.first.humanReadableName << std::endl;
-                        std::cout << "Existing action: " << actionTable[std::make_pair(configurationSets[i].id, transition.first.id)] << std::endl;
-                        std::cout << "New action: " << newConfigurationSet.id << std::endl;
+                        if(transition.first.isTerminal)
+                        {
+                            std::cout << "Error: conflict in action table" << std::endl;
+                            std::cout << "State: " << configurationSets[i].id << std::endl;
+                            std::cout << "Symbol: " << transition.first.humanReadableName << std::endl;
+                            std::cout << "Existing action: " << targetTable[std::make_pair(configurationSets[i].id, transition.first.id)] << std::endl;
+                            std::cout << "New action: " << newConfigurationSet.id << std::endl;
+                        }
+                        else
+                        {
+                            std::cout << "Error: conflict in goto table" << std::endl;
+                            std::cout << "State: " << configurationSets[i].id << std::endl;
+                            std::cout << "Symbol: " << transition.first.humanReadableName << std::endl;
+                            std::cout << "Existing goto: " << targetTable[std::make_pair(configurationSets[i].id, transition.first.id)] << std::endl;
+                            std::cout << "New goto: " << newConfigurationSet.id << std::endl;
+                        }
+                        
                         printConfigurationSets();
                         printActionTable();
+                        printGotoTable();
                         exit(1);
                     }
                 }
+
             }
         }
         if (!changed)
@@ -269,6 +293,7 @@ std::unordered_set<Symbol> Parser::getFirstSet(Symbol symbol)
     {
         return firstSetMemo.at(symbol);
     }
+    firstSetRecursionMemo.insert(symbol);
     std::unordered_set<Symbol> firstSet;
     for (const auto& production : productions)
     {
@@ -282,8 +307,12 @@ std::unordered_set<Symbol> Parser::getFirstSet(Symbol symbol)
                 }
                 else
                 {
-                    std::unordered_set<Symbol> firstSetOfRhs = getFirstSet(production->rhs[i]);
-                    firstSet.insert(firstSetOfRhs.begin(), firstSetOfRhs.end());
+                    if(firstSetRecursionMemo.count(production->rhs[i]) == 0)
+                    {
+                        std::unordered_set<Symbol> firstSetOfRhs = getFirstSet(production->rhs[i]);
+                        firstSet.insert(firstSetOfRhs.begin(), firstSetOfRhs.end());
+                    }
+                    
                 }
                 if (nullableSymbols.count(production->rhs[i].id) == 0)
                 {
@@ -292,6 +321,7 @@ std::unordered_set<Symbol> Parser::getFirstSet(Symbol symbol)
             }
         }
     }
+    firstSetRecursionMemo.erase(symbol);
     firstSetMemo[symbol] = firstSet;
     return firstSet;
 }

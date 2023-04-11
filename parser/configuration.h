@@ -35,7 +35,9 @@ namespace std
         {
             size_t res = 17;
             res = res * 31 + hash<int>()( configuration.production->lhs.id);
-            res = res * 31 + hash<int>()( configuration.production->rhs[configuration.dotPosition].id);
+             for(const auto& symbol : configuration.production->rhs)
+                res = res * 31 + hash<int>()(symbol.id);
+            res = res * 31 + hash<int>()(configuration.dotPosition);
             for(const auto& lookahead : configuration.lookaheads)
                 res = res * 31 + hash<int>()(lookahead.id);
             return res;
@@ -49,7 +51,7 @@ namespace std
 class ConfigurationSet
 {
 public:
-    ConfigurationSet(std::vector<Configuration> configurations, int id);
+    ConfigurationSet(std::unordered_set<Configuration> configurations, int id);
     static int controlId(bool increment);
     static int getId();
     static void rollbackId();

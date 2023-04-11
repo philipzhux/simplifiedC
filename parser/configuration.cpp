@@ -35,7 +35,7 @@ Symbol Configuration::getSymbolAfterDot()
 
 
 
-ConfigurationSet::ConfigurationSet(std::vector<Configuration> configurations, int id) : configurations{configurations.begin(), configurations.end()}, id{id} {
+ConfigurationSet::ConfigurationSet(std::unordered_set<Configuration> configurations, int id) : configurations{configurations}, id{id} {
     
 }
 

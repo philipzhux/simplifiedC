@@ -26,6 +26,9 @@ public:
     Parser(Symbol startLhs, std::vector<Symbol> startRhs, Terminal endSymbol);
     Terminal endSymbol;
     int startProductionId;
+
+    // track the path of recursion in building first set to avoid infinite recursion
+    std::unordered_set<Symbol> firstSetRecursionMemo;
     std::unordered_map<Symbol, std::unordered_set<Symbol> > firstSetMemo;
     std::unordered_set<int> nullableSymbols;
     // production zero is the augmented production (goal)
