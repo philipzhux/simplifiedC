@@ -18,7 +18,8 @@ namespace std
     };
 }
 
-
+/// @brief A parser is a set of productions, configuration sets, action table and goto table.
+/// @details The parser is built by the build() method. The parse() method can be used to parse a sequence of symbols.
 class Parser
 {
 public:

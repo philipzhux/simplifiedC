@@ -3,6 +3,7 @@
 #include <memory>
 #include <unordered_set>
 
+/// @brief A symbol is a terminal or non-terminal symbol.
 class Symbol
 {
 public:
@@ -27,6 +28,7 @@ namespace std
     };
 }
 
+/// @brief A terminal symbol.
 class Terminal : public Symbol
 {
 public:
@@ -36,6 +38,7 @@ private:
     Token token;
 };
 
+/// @brief A non-terminal symbol.
 class NonTerminal : public Symbol
 {
 public:

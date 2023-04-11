@@ -2,6 +2,8 @@
 #include "symbol.h"
 #include <vector>
 
+/// @brief A production is a rule in the grammar.
+/// @details The production is defined by a left-hand side symbol and a right-hand side sequence of symbols.
 class Production
 {
 public:

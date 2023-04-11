@@ -4,14 +4,20 @@
 Parser::Parser(Symbol startLhs, std::vector<Symbol> startRhs, Terminal endSymbol) : endSymbol(endSymbol)
 {
     startProductionId = addProduction(startLhs, startRhs);
+    // augmented production should be the production 0
+    // reduced by production 0 is the accept state
+    assert(startProductionId == 0);
 }
 
+/// @brief get the closure of a configuration
+/// @param initConfiguration the initial configuration
+/// @return a vector of configurations that are in the closure of initConfiguration
 std::vector<Configuration> Parser::getClosure(const Configuration &initConfiguration) const
 {
     std::vector<Configuration> closure;
     closure.push_back(initConfiguration);
     bool changed = true;
-    while (changed)
+    while (changed) // keep expanding until no new configuration is added
     {
         changed = false;
         size_t size = closure.size();
@@ -28,21 +34,33 @@ std::vector<Configuration> Parser::getClosure(const Configuration &initConfigura
                 {
                     if (production.lhs == symbolAfterDot)
                     {
+                        // found a production with same lhs, insert it into the closure
+                        // expanding symbolAfterDot
                         for (const auto &configLookahead : closure[i].lookaheads)
                         {
+                            // calculate the lookahead for the new configuration
                             std::vector<Symbol> followSymbols;
+
+                            // the symbols after the expanded symbol, needed to construct the lookahead
                             for (int rhsIdx = closure[i].dotPosition + 1; rhsIdx < closure[i].production->rhs.size(); rhsIdx++)
                             {
                                 followSymbols.push_back(closure[i].production->rhs[rhsIdx]);
                             }
                             followSymbols.push_back(configLookahead);
+
+                            // lookahead is the first set of [the symbols after the expanded symbol] + [the lookahead of the original configuration]
                             for (auto lookahead : getFirstSet(followSymbols))
                             {
+                                // flag to indicate whether the new configuration is already in the closure
+                                // after the loop, if it is still true, then the new configuration is not in the closure
                                 bool needInsert = true;
                                 for (int j = 0; j < closure.size(); j++)
                                 {
                                     if (*closure[j].production == production && closure[j].dotPosition == 0)
                                     {
+                                        // found a configuration with same production and dot position
+                                        // may either add the lookahead to the existing configuration, or ignore it
+                                        // if the lookahead is already in the existing configuration
                                         needInsert = false;
                                         if (closure[j].lookaheads.count(lookahead) == 0)
                                         {
@@ -51,6 +69,9 @@ std::vector<Configuration> Parser::getClosure(const Configuration &initConfigura
                                             closure[j].lookaheads.insert(lookahead);
                                             changed = true;
                                         }
+
+                                        // at this point the new configuration is already in the closure
+                                        // no need to insert it, so break the loop
                                         break;
                                     }
                                 }
@@ -71,6 +92,7 @@ std::vector<Configuration> Parser::getClosure(const Configuration &initConfigura
 }
 
 /// @brief build the parser
+/// @details build the parser by constructing the configuration sets, action table and goto table
 void Parser::build()
 {
     // build configuration sets and action table
@@ -147,7 +169,9 @@ void Parser::build()
     
 }
 
-// function to parse the input
+/// @brief parse the input from the lexer
+/// @details this is the core function of the parser, it parses the input from the lexer with the action table and goto table
+/// @param input the input from the lexer
 bool Parser::parse(std::vector<Symbol> input)
 {
     std::vector<int> stack;
@@ -213,6 +237,11 @@ bool Parser::parse(std::vector<Symbol> input)
     return false;
 }
 
+/// @brief add a production to the parser
+/// @details this function adds a production to the parser, it also updates the nullable symbols
+/// @param lhs the left hand side of the production
+/// @param rhs the right hand side of the production
+/// @return the id of the production
 int Parser::addProduction(Symbol lhs, std::vector<Symbol> rhs)
 {
     Production production = Production(lhs, rhs, productions.size());
@@ -224,6 +253,10 @@ int Parser::addProduction(Symbol lhs, std::vector<Symbol> rhs)
     return production.id;
 }
 
+/// @brief get the first set of a symbol
+/// @details this function returns the first set of a symbol
+/// @param symbol the symbol
+/// @return a vector that contains the first set of the symbol
 std::vector<Symbol> Parser::getFirstSet(Symbol symbol) const
 {
 
@@ -257,6 +290,10 @@ std::vector<Symbol> Parser::getFirstSet(Symbol symbol) const
     return firstSet;
 }
 
+/// @brief get the first set of a vector of symbols
+/// @details this function returns the first set of a vector of symbols
+/// @param symbols the vector of symbols
+/// @return a vector that contains the first set of the vector of symbols
 std::vector<Symbol> Parser::getFirstSet(const std::vector<Symbol> &symbols) const
 {
     std::vector<Symbol> firstSet;
@@ -272,6 +309,7 @@ std::vector<Symbol> Parser::getFirstSet(const std::vector<Symbol> &symbols) cons
     return firstSet;
 }
 
+/// @brief print the productions
 void Parser::printProductions() const
 {
     for (auto const &production : productions)
@@ -286,6 +324,7 @@ void Parser::printProductions() const
     }
 }
 
+/// @brief print a particular configuration set
 void Parser::printConfigurationSet(const ConfigurationSet &configurationSet) const
 {
     std::cout << "Configuration Set " << configurationSet.id << std::endl;
@@ -313,6 +352,7 @@ void Parser::printConfigurationSet(const ConfigurationSet &configurationSet) con
     }
 }
 
+/// @brief print configuration sets of the parser
 void Parser::printConfigurationSets() const
 {
     for (auto const &configurationSet : configurationSets)
@@ -321,6 +361,7 @@ void Parser::printConfigurationSets() const
     }
 }
 
+/// @brief print the action table
 void Parser::printActionTable() const
 {
     std::cout << "Action Table" << std::endl;
@@ -330,6 +371,7 @@ void Parser::printActionTable() const
     }
 }
 
+/// @brief print the goto table
 void Parser::printGotoTable() const
 {
     std::cout << "Goto Table" << std::endl;

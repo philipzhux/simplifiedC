@@ -9,6 +9,7 @@
 #include <algorithm>
 #include "production.h"
 
+/// @brief A configuration is a production with a dot position and a set of lookahead symbols.
 class Configuration
 {
 public:
@@ -43,6 +44,8 @@ namespace std
 }
 
 
+/// @brief A configuration set is a set of configurations.
+/// @details Each configuration set is a state in the LR(1) automaton.
 class ConfigurationSet
 {
 public:

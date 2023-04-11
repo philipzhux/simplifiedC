@@ -2,6 +2,8 @@
 
 Configuration::Configuration(std::shared_ptr<Production> production, int dotPosition, std::unordered_set<Symbol> lookaheads) : production(production), dotPosition(dotPosition), lookaheads(lookaheads) {}
 
+/// @brief Get the transition symbol and the next configuration.
+/// @return A pair of the transition symbol and the next configuration.
 std::pair<Symbol, Configuration> Configuration::getTransition()
 {
     assert(!isComplete());
@@ -13,13 +15,16 @@ bool Configuration::operator==(const Configuration &other) const
     return *production == *other.production && dotPosition == other.dotPosition && lookaheads == other.lookaheads;
 }
 
-// This is a function for checking if the configuration is complete.
+/// @brief Check if the configuration is complete.
+/// @return True if the configuration is complete, false otherwise.
 bool Configuration::isComplete()
 {
     return dotPosition == production->rhs.size();
 }
 
-// This is a function to get the symbol after dot.
+
+/// @brief Get the symbol after the dot.
+/// @return The symbol after the dot.
 Symbol Configuration::getSymbolAfterDot()
 {
     assert(!isComplete());
@@ -38,16 +43,20 @@ bool ConfigurationSet::operator==(const ConfigurationSet &other) const
 {
     return configurations == other.configurations;
 }
+
+/// @brief Get an auto-incremented id.
 int ConfigurationSet::getId()
 {
     return controlId(true);
 }
 
+/// @brief Rollback the id when a temporary configuration set is not committed.
 void ConfigurationSet::rollbackId()
 {
     controlId(false);
 }
 
+/// @brief Core control function for id manipulation.
 int ConfigurationSet::controlId(bool increment)
 {
     static int id = 0;
