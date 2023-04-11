@@ -49,20 +49,3 @@ int main()
         wrapper.parser.parse(symbols);
     }
 }
-
-// NonTerminal _sPrime("S'", Symbol::getId());
-// NonTerminal _s("S", Symbol::getId());
-// NonTerminal _x("X", Symbol::getId());
-// Terminal _$("$", $, Symbol::getId());
-// Terminal _a("a", A, Symbol::getId());
-// Terminal _b("b", B, Symbol::getId());
-
-// Parser parser(_sPrime, {_s}, _$);
-// parser.addProduction(_s, {_x, _x});
-// parser.addProduction(_x, {_a, _x});
-// parser.addProduction(_x, {_b});
-// parser.build();
-// parser.printProductions();
-// parser.printConfigurationSets();
-// parser.printActionTable();
-// parser.printGotoTable();
