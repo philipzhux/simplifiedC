@@ -7,6 +7,7 @@ Parser::Parser(Symbol startLhs, std::vector<Symbol> startRhs, Terminal endSymbol
     // augmented production should be the production 0
     // reduced by production 0 is the accept state
     assert(startProductionId == 0);
+    repCount = 0;
 }
 
 /// @brief get the closure of a configuration
@@ -122,11 +123,11 @@ void Parser::build()
             for (const auto& transition : transitionMap)
             {
                 ConfigurationSet newConfigurationSet = ConfigurationSet(transition.second, ConfigurationSet::getId());
-                const auto& found = std::find(configurationSets.begin(), configurationSets.end(), newConfigurationSet);
+                auto found = std::find(configurationSets.begin(), configurationSets.end(), newConfigurationSet);
                 if (found == configurationSets.end())
                 {
                     configurationSets.push_back(newConfigurationSet);
-                    std::cout<<"new configuration set: "<<newConfigurationSet.id<<std::endl;
+                    std::cout<<"new configuration set: "<<newConfigurationSet.id<<" rep ="<< repCount << std::endl;
                     // printConfigurationSet(newConfigurationSet);
                     // changed = true;
                 }
@@ -134,6 +135,7 @@ void Parser::build()
                 {
                     newConfigurationSet = *found;
                     ConfigurationSet::rollbackId();
+                    repCount++;
                 }
                 std::unordered_map<std::pair<int,int>,int>& targetTable = transition.first.isTerminal ? actionTable : gotoTable;
                 // printActionTable();
