@@ -4,7 +4,7 @@ Configuration::Configuration(std::shared_ptr<Production> production, int dotPosi
 
 /// @brief Get the transition symbol and the next configuration.
 /// @return A pair of the transition symbol and the next configuration.
-std::pair<Symbol, Configuration> Configuration::getTransition()
+std::pair<Symbol, Configuration> Configuration::getTransition() const
 {
     assert(!isComplete());
     return std::make_pair(production->rhs[dotPosition], Configuration(production, dotPosition + 1, lookaheads));
@@ -17,7 +17,7 @@ bool Configuration::operator==(const Configuration &other) const
 
 /// @brief Check if the configuration is complete.
 /// @return True if the configuration is complete, false otherwise.
-bool Configuration::isComplete()
+bool Configuration::isComplete() const
 {
     return dotPosition == production->rhs.size();
 }

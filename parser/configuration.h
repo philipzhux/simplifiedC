@@ -17,9 +17,9 @@ public:
     std::shared_ptr<Production> production;
     int dotPosition;
      std::unordered_set<Symbol> lookaheads;
-    std::pair<Symbol, Configuration> getTransition();
+    std::pair<Symbol, Configuration> getTransition() const;
     bool operator==(const Configuration &other) const;
-    bool isComplete();
+    bool isComplete() const;
     Symbol getSymbolAfterDot();
     // add hash support for class Configuration
     friend struct std::hash<Configuration>;
@@ -36,7 +36,7 @@ namespace std
             size_t res = 17;
             res = res * 31 + hash<int>()( configuration.production->lhs.id);
             res = res * 31 + hash<int>()( configuration.production->rhs[configuration.dotPosition].id);
-            for(auto const &lookahead : configuration.lookaheads)
+            for(const auto& lookahead : configuration.lookaheads)
                 res = res * 31 + hash<int>()(lookahead.id);
             return res;
         }

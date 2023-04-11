@@ -30,13 +30,13 @@ std::vector<Configuration> Parser::getClosure(const Configuration &initConfigura
             Symbol symbolAfterDot = closure[i].getSymbolAfterDot();
             if (!symbolAfterDot.isTerminal)
             {
-                for (auto const &production : productions)
+                for (const auto& production : productions)
                 {
                     if (production.lhs == symbolAfterDot)
                     {
                         // found a production with same lhs, insert it into the closure
                         // expanding symbolAfterDot
-                        for (const auto &configLookahead : closure[i].lookaheads)
+                        for (const auto& configLookahead : closure[i].lookaheads)
                         {
                             // calculate the lookahead for the new configuration
                             std::vector<Symbol> followSymbols;
@@ -49,7 +49,7 @@ std::vector<Configuration> Parser::getClosure(const Configuration &initConfigura
                             followSymbols.push_back(configLookahead);
 
                             // lookahead is the first set of [the symbols after the expanded symbol] + [the lookahead of the original configuration]
-                            for (auto lookahead : getFirstSet(followSymbols))
+                            for (const auto& lookahead : getFirstSet(followSymbols))
                             {
                                 // flag to indicate whether the new configuration is already in the closure
                                 // after the loop, if it is still true, then the new configuration is not in the closure
@@ -105,8 +105,8 @@ void Parser::build()
         size_t size = configurationSets.size();
         for (int i = 0; i < size; i++)
         {
-            auto configurationSet = configurationSets[i];
-            for (auto configuration : configurationSet.configurations)
+            const auto&  configurationSet = configurationSets[i];
+            for (const auto& configuration : configurationSet.configurations)
             {
                 if (configuration.isComplete())
                 {
@@ -115,7 +115,7 @@ void Parser::build()
                 std::pair<Symbol, Configuration> transition = configuration.getTransition();
                 std::vector<Configuration> closure = getClosure(transition.second);
                 ConfigurationSet newConfigurationSet = ConfigurationSet(closure, ConfigurationSet::getId());
-                auto found = std::find(configurationSets.begin(), configurationSets.end(), newConfigurationSet);
+                const auto& found = std::find(configurationSets.begin(), configurationSets.end(), newConfigurationSet);
                 if (found == configurationSets.end())
                 {
                     configurationSets.push_back(newConfigurationSet);
@@ -153,13 +153,13 @@ void Parser::build()
         }
     }
     // now consider the reduction case
-    for (auto configurationSet : configurationSets)
+    for (const auto& configurationSet : configurationSets)
     {
-        for (auto configuration : configurationSet.configurations)
+        for (const auto& configuration : configurationSet.configurations)
         {
             if (configuration.isComplete())
             {
-                for (const auto &configLookahead : configuration.lookaheads)
+                for (const auto& configLookahead : configuration.lookaheads)
                 {
                     actionTable[std::make_pair(configurationSet.id, configLookahead.id)] = -configuration.production->id;
                 }
@@ -265,7 +265,7 @@ std::vector<Symbol> Parser::getFirstSet(Symbol symbol) const
         return {symbol};
     }
     std::vector<Symbol> firstSet;
-    for (auto const &production : productions)
+    for (const auto& production : productions)
     {
         if (production.lhs == symbol)
         {
@@ -297,7 +297,7 @@ std::vector<Symbol> Parser::getFirstSet(Symbol symbol) const
 std::vector<Symbol> Parser::getFirstSet(const std::vector<Symbol> &symbols) const
 {
     std::vector<Symbol> firstSet;
-    for (auto symbol : symbols)
+    for (const auto& symbol : symbols)
     {
         std::vector<Symbol> firstSetOfSymbol = getFirstSet(symbol);
         firstSet.insert(firstSet.end(), firstSetOfSymbol.begin(), firstSetOfSymbol.end());
@@ -312,11 +312,11 @@ std::vector<Symbol> Parser::getFirstSet(const std::vector<Symbol> &symbols) cons
 /// @brief print the productions
 void Parser::printProductions() const
 {
-    for (auto const &production : productions)
+    for (const auto& production : productions)
     {
         std::cout << production.id << ": ";
         std::cout << production.lhs.humanReadableName << " -> ";
-        for (auto const &symbol : production.rhs)
+        for (const auto& symbol : production.rhs)
         {
             std::cout << symbol.humanReadableName << " ";
         }
@@ -328,7 +328,7 @@ void Parser::printProductions() const
 void Parser::printConfigurationSet(const ConfigurationSet &configurationSet) const
 {
     std::cout << "Configuration Set " << configurationSet.id << std::endl;
-    for (auto const &configuration : configurationSet.configurations)
+    for (const auto& configuration : configurationSet.configurations)
     {
         std::cout << configuration.production->lhs.humanReadableName << " -> ";
         for (int i = 0; i < configuration.production->rhs.size(); i++)
@@ -344,7 +344,7 @@ void Parser::printConfigurationSet(const ConfigurationSet &configurationSet) con
             std::cout << ".";
         }
         std::cout << " , ";
-        for (auto const &lookahead : configuration.lookaheads)
+        for (const auto& lookahead : configuration.lookaheads)
         {
             std::cout << lookahead.humanReadableName << " ";
         }
@@ -355,7 +355,7 @@ void Parser::printConfigurationSet(const ConfigurationSet &configurationSet) con
 /// @brief print configuration sets of the parser
 void Parser::printConfigurationSets() const
 {
-    for (auto const &configurationSet : configurationSets)
+    for (const auto& configurationSet : configurationSets)
     {
         printConfigurationSet(configurationSet);
     }
@@ -365,7 +365,7 @@ void Parser::printConfigurationSets() const
 void Parser::printActionTable() const
 {
     std::cout << "Action Table" << std::endl;
-    for (auto const &entry : actionTable)
+    for (const auto& entry : actionTable)
     {
         std::cout << entry.first.first << " " << entry.first.second << " " << entry.second << std::endl;
     }
@@ -375,7 +375,7 @@ void Parser::printActionTable() const
 void Parser::printGotoTable() const
 {
     std::cout << "Goto Table" << std::endl;
-    for (auto const &entry : gotoTable)
+    for (const auto& entry : gotoTable)
     {
         std::cout << entry.first.first << " " << entry.first.second << " " << entry.second << std::endl;
     }
