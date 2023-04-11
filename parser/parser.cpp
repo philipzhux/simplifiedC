@@ -100,11 +100,12 @@ void Parser::build()
     std::vector<Configuration> initialClosure = getClosure(initialConfig);
     ConfigurationSet initialConfigurationSet = ConfigurationSet({initialClosure.begin(),initialClosure.end()}, ConfigurationSet::getId());
     configurationSets.push_back(initialConfigurationSet);
+    int i = 0;
     while (true)
     {
         bool changed = false;
         size_t size = configurationSets.size();
-        for (int i = 0; i < size; i++)
+        for (; i < size; i++)
         {
             // auto configurationSet = configurationSets[i];
             std::unordered_map<Symbol, std::unordered_set<Configuration>> transitionMap;
