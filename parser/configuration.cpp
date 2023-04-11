@@ -15,7 +15,7 @@ std::pair<Symbol, Configuration> Configuration::getTransition() const
 
 bool Configuration::operator==(const Configuration &other) const
 {
-    return *production == *other.production && dotPosition == other.dotPosition && lookaheads == other.lookaheads;
+    return production->id == other.production->id && dotPosition == other.dotPosition && lookaheads == other.lookaheads;
 }
 
 /// @brief Check if the configuration is complete.
