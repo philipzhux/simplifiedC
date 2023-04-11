@@ -1,8 +1,20 @@
 #include "parser.h"
 #include <iostream>
+#include <map>
 
 int main()
 {
+
+    std::string src = "";
+    for (std::string line; std::getline(std::cin, line);)
+    {
+        src += line + "\n";
+    }
+    Scanner lex(src);
+    if (!lex.compile())
+    {
+        std::cout << "Syntax Error" << std::endl;
+    }
     // NonTerminal _sPrime("S'", Symbol::getId());
     // NonTerminal _s("S", Symbol::getId());
     // NonTerminal _x("X", Symbol::getId());
@@ -69,6 +81,45 @@ int main()
     Terminal _lpar("LPAR", LPAR, Symbol::getId());
     Terminal _rpar("RPAR", RPAR, Symbol::getId());
 
+    // mapping between token type and terminal symbol
+    std::map<Token, Terminal> tokenToTerminal = {
+        {INT, _int},
+        {SEMI, _semi},
+        {COMMA, _comma},
+        {ASSIGN, _assign},
+        {ID, _id},
+        {LSQUARE, _lsquare},
+        {RSQUARE, _rsquare},
+        {LBRACE, _lbrace},
+        {RBRACE, _rbrace},
+        {IF, _if},
+        {ELSE, _else},
+        {WHILE, _while},
+        {DO, _do},
+        {RETURN, _return},
+        {READ, _read},
+        {WRITE, _write},
+        {OROR, _oror},
+        {ANDAND, _andand},
+        {OR_OP, _or_op},
+        {AND_OP, _and_op},
+        {EQ, _eq},
+        {NOTEQ, _noteq},
+        {LT, _lt},
+        {GT, _gt},
+        {LTEQ, _lteq},
+        {GTEQ, _gteq},
+        {SHL_OP, _shl_op},
+        {SHR_OP, _shr_op},
+        {PLUS, _plus},
+        {MINUS, _minus},
+        {MUL_OP, _mul_op},
+        {DIV_OP, _div_op},
+        {NOT_OP, _not_op},
+        {INT_NUM, _int_num},
+        {LPAR, _lpar},
+        {RPAR, _rpar}};
+
     // declare non-terminal symbols
     NonTerminal _sPrime("S'", Symbol::getId());
     NonTerminal _program("program", Symbol::getId());
@@ -106,7 +157,7 @@ int main()
     // add production rules according to the grammars
     parser.addProduction(_program, {_var_declarations, _statements});
     parser.addProduction(_var_declarations, {_var_declarations, _var_declaration});
-    parser.addProduction(_var_declarations, {_var_declaration});
+    // parser.addProduction(_var_declarations, {_var_declaration});
     parser.addProduction(_var_declarations, {});
     parser.addProduction(_var_declaration, {_int, _declaration_list, _semi});
     parser.addProduction(_declaration_list, {_declaration_list, _comma, _declaration});
@@ -170,35 +221,40 @@ int main()
     parser.addProduction(_exp9, {_id});
     parser.addProduction(_exp9, {_lpar, _exp, _rpar});
     parser.build();
-
+    std::cout << "Parser built successfully!" << std::endl;
+    std::vector<Symbol> symbols;
+    for (auto &token : lex.matchedTokens) {
+        symbols.push_back(tokenToTerminal.at(token));
+    }
+    parser.parse(symbols);
 }
 
-    // Scanner scanner("test.txt");
-    // scanner.compile();
-    // convert enum token to terminal symbols
-    // Terminal _int("INT", INT, Symbol::getId());
-    // Terminal _main("MAIN", MAIN, Symbol::getId());
-    // Terminal _do("DO", DO, Symbol::getId());
-    // Terminal _else("ELSE", ELSE, Symbol::getId());
-    // Terminal _return("RETURN", RETURN, Symbol::getId());
-    // Terminal _void("VOID", VOID, Symbol::getId());
-    // Terminal _break("BREAK", BREAK, Symbol::getId());
-    // Terminal _if("IF", IF, Symbol::getId());
-    // Terminal _while("WHILE", WHILE, Symbol::getId());
-    // Terminal _read("READ", READ, Symbol::getId());
-    // Terminal _write("WRITE", WRITE, Symbol::getId());
-    // Terminal _int_num("INT_NUM", INT_NUM, Symbol::getId());
-    // Terminal _id("ID", ID, Symbol::getId());
-    // Terminal _lbrace("LBRACE", LBRACE, Symbol::getId());
-    // Terminal _rbrace("RBRACE", RBRACE, Symbol::getId());
-    // Terminal _lsquare("LSQUARE", LSQUARE, Symbol::getId());
-    // Terminal _rsquare("RSQUARE", RSQUARE, Symbol::getId());
-    // Terminal _lpar("LPAR", LPAR, Symbol::getId());
-    // Terminal _rpar("RPAR", RPAR, Symbol::getId());
-    // Terminal _semi("SEMI", SEMI, Symbol::getId());
-    // Terminal _plus("PLUS", PLUS, Symbol::getId());
-    // Terminal _minus("MINUS", MINUS, Symbol::getId());
-    // Terminal _mul_op("MUL_OP", MUL_OP, Symbol::getId());
-    // Terminal _div_op("DIV_OP", DIV_OP, Symbol::getId());
-    // Terminal _and_op("AND_OP", AND_OP, Symbol::getId());
-    // Terminal _or_op("OR_OP", OR_OP, Symbol::getId());
+// Scanner scanner("test.txt");
+// scanner.compile();
+// convert enum token to terminal symbols
+// Terminal _int("INT", INT, Symbol::getId());
+// Terminal _main("MAIN", MAIN, Symbol::getId());
+// Terminal _do("DO", DO, Symbol::getId());
+// Terminal _else("ELSE", ELSE, Symbol::getId());
+// Terminal _return("RETURN", RETURN, Symbol::getId());
+// Terminal _void("VOID", VOID, Symbol::getId());
+// Terminal _break("BREAK", BREAK, Symbol::getId());
+// Terminal _if("IF", IF, Symbol::getId());
+// Terminal _while("WHILE", WHILE, Symbol::getId());
+// Terminal _read("READ", READ, Symbol::getId());
+// Terminal _write("WRITE", WRITE, Symbol::getId());
+// Terminal _int_num("INT_NUM", INT_NUM, Symbol::getId());
+// Terminal _id("ID", ID, Symbol::getId());
+// Terminal _lbrace("LBRACE", LBRACE, Symbol::getId());
+// Terminal _rbrace("RBRACE", RBRACE, Symbol::getId());
+// Terminal _lsquare("LSQUARE", LSQUARE, Symbol::getId());
+// Terminal _rsquare("RSQUARE", RSQUARE, Symbol::getId());
+// Terminal _lpar("LPAR", LPAR, Symbol::getId());
+// Terminal _rpar("RPAR", RPAR, Symbol::getId());
+// Terminal _semi("SEMI", SEMI, Symbol::getId());
+// Terminal _plus("PLUS", PLUS, Symbol::getId());
+// Terminal _minus("MINUS", MINUS, Symbol::getId());
+// Terminal _mul_op("MUL_OP", MUL_OP, Symbol::getId());
+// Terminal _div_op("DIV_OP", DIV_OP, Symbol::getId());
+// Terminal _and_op("AND_OP", AND_OP, Symbol::getId());
+// Terminal _or_op("OR_OP", OR_OP, Symbol::getId());

@@ -1,5 +1,5 @@
 #pragma once
-#include "token.hpp"
+#include "../scanner/scanner.hpp"
 #include <memory>
 #include <unordered_set>
 // non-linux systems need <string> as not always included by <unordered_set>
