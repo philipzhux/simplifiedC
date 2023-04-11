@@ -30,8 +30,7 @@ public:
     // production zero is the augmented production (goal)
     // reduce according to production zero is the accept state
     
-    
-    std::vector<Production> productions;
+    std::vector<std::shared_ptr<Production> > productions;
     std::vector<ConfigurationSet> configurationSets;
     // i>0: shift to state i; i=0: accept (reduce 0); i<0: reduce according to production -i
     std::unordered_map<std::pair<int, int>, int> actionTable;
