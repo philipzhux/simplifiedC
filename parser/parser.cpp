@@ -1,6 +1,8 @@
 #include "parser.h"
 #include <iostream>
 
+Parser::Parser(){}
+
 Parser::Parser(Symbol startLhs, std::vector<Symbol> startRhs, Terminal endSymbol) : endSymbol(endSymbol)
 {
     startProductionId = addProduction(startLhs, startRhs);
@@ -101,11 +103,12 @@ void Parser::build()
     std::vector<Configuration> initialClosure = getClosure(initialConfig);
     ConfigurationSet initialConfigurationSet = ConfigurationSet({initialClosure.begin(),initialClosure.end()}, ConfigurationSet::getId());
     configurationSets.push_back(initialConfigurationSet);
+    int i = 0;
     while (true)
     {
         bool changed = false;
         size_t size = configurationSets.size();
-        for (int i = 0; i < size; i++)
+        for (; i < size; i++)
         {
             // auto configurationSet = configurationSets[i];
             std::unordered_map<Symbol, std::unordered_set<Configuration>> transitionMap;
@@ -121,36 +124,32 @@ void Parser::build()
             }
             for (const auto& transition : transitionMap)
             {
-                //ConfigurationSet newConfigurationSet = ConfigurationSet(transition.second, ConfigurationSet::getId());
-                int newConfigurationSetId = -1;
-                for (const auto& configSet: configurationSets)
+                ConfigurationSet newConfigurationSet = ConfigurationSet(transition.second, ConfigurationSet::getId());
+                auto found = std::find(configurationSets.begin(), configurationSets.end(), newConfigurationSet);
+                if (found == configurationSets.end())
                 {
-                    if (configSet.configurations == transition.second)
-                    {
-                        newConfigurationSetId = configSet.id;
-                        repCount++;
-                        break;
-                    }
+                    configurationSets.push_back(newConfigurationSet);
+                    // std::cout<<"new configuration set: "<<newConfigurationSet.id<<" rep ="<< repCount << std::endl;
+                    // printConfigurationSet(newConfigurationSet);
+                    // changed = true;
                 }
-                if (newConfigurationSetId == -1)
+                else
                 {
-                    newConfigurationSetId = ConfigurationSet::getId();
-                    configurationSets.push_back(ConfigurationSet(transition.second, newConfigurationSetId));
-                    std::cout << "new configuration set: " << newConfigurationSetId << std::endl;
-                    std::cout << "current repCount: " << repCount << std::endl;
-                    changed = true;
+                    newConfigurationSet = *found;
+                    ConfigurationSet::rollbackId();
+                    repCount++;
                 }
-                
                 std::unordered_map<std::pair<int,int>,int>& targetTable = transition.first.isTerminal ? actionTable : gotoTable;
                 // printActionTable();
                 // printGotoTable();
                 if (targetTable.count(std::make_pair(configurationSets[i].id, transition.first.id)) == 0)
                 {
-                    targetTable[std::make_pair(configurationSets[i].id, transition.first.id)] = newConfigurationSetId;
+                    changed = true;
+                    targetTable[std::make_pair(configurationSets[i].id, transition.first.id)] = newConfigurationSet.id;
                 }
                 else
                 {
-                    if (targetTable[std::make_pair(configurationSets[i].id, transition.first.id)] != newConfigurationSetId)
+                    if (targetTable[std::make_pair(configurationSets[i].id, transition.first.id)] != newConfigurationSet.id)
                     {
                         if(transition.first.isTerminal)
                         {
@@ -158,7 +157,7 @@ void Parser::build()
                             std::cout << "State: " << configurationSets[i].id << std::endl;
                             std::cout << "Symbol: " << transition.first.humanReadableName << std::endl;
                             std::cout << "Existing action: " << targetTable[std::make_pair(configurationSets[i].id, transition.first.id)] << std::endl;
-                            std::cout << "New action: " << newConfigurationSetId << std::endl;
+                            std::cout << "New action: " << newConfigurationSet.id << std::endl;
                         }
                         else
                         {
@@ -166,7 +165,7 @@ void Parser::build()
                             std::cout << "State: " << configurationSets[i].id << std::endl;
                             std::cout << "Symbol: " << transition.first.humanReadableName << std::endl;
                             std::cout << "Existing goto: " << targetTable[std::make_pair(configurationSets[i].id, transition.first.id)] << std::endl;
-                            std::cout << "New goto: " << newConfigurationSetId << std::endl;
+                            std::cout << "New goto: " << newConfigurationSet.id << std::endl;
                         }
                         
                         printConfigurationSets();
@@ -206,6 +205,7 @@ void Parser::build()
 bool Parser::parse(std::vector<Symbol> input)
 {
     std::vector<int> stack;
+    std::vector<Symbol> symbolStack;
     stack.push_back(0);
     input.push_back(endSymbol);
     int inputCursor = 0;
@@ -225,22 +225,31 @@ bool Parser::parse(std::vector<Symbol> input)
         if (nextState > 0)
         {
             stack.push_back(nextState);
+            symbolStack.push_back(currentSymbol);
             inputCursor++;
             // print shift message
-            std::cout << std::endl;
-            std::cout << "Shift to state " << nextState << std::endl;
+            std::cout << "state: " << currentState << "\t";
+            std::cout << "next type: " << currentSymbol.humanReadableName << "\t";
+            std::cout << "shift to state " << nextState << std::endl;
+            std::cout << "current situation: ";
+            // print current situation according to the stack
+            for (int i = 0; i < symbolStack.size(); i++)
+            {
+                std::cout << symbolStack[i].humanReadableName << " ";
+            }
+            std::cout << "|" << std::endl;
+            
         }
         else if (nextState < 0)
         {   
             int production = -nextState;
             // print reduce message
-            std::cout << std::endl;
-            std::cout << "Reduce by production " << production << std::endl;
 
             // pop series of states from the stack according to the rhs of the production
             for (int j = 0; j < productions[production]->rhs.size(); j++)
             {
                 stack.pop_back();
+                symbolStack.pop_back();
             }
             
             if(gotoTable.count(std::make_pair(stack.back(), productions[production]->lhs.id)) == 0)
@@ -254,16 +263,42 @@ bool Parser::parse(std::vector<Symbol> input)
 
             // push the next state according to the goto table
             nextState = gotoTable[std::make_pair(stack.back(), productions[production]->lhs.id)];
-            // print goto message
-            std::cout << "Goto state " << nextState << std::endl;
             
             stack.push_back(nextState);
-           
+            symbolStack.push_back(productions[production]->lhs);
+
+            /*
+            Sample shift message
+            state: 49	next type: SEMI		reduce by grammar 9: declaration->ID 
+            current situation: INT | declaration
+            */
+            std::cout << "state: " << currentState << "\t";
+            std::cout << "next type: " << currentSymbol.humanReadableName << "\t";
+            std::cout << "reduce by grammar " << production << ": " << productions[production]->lhs.humanReadableName << "->";
+            for (int j = 0; j < productions[production]->rhs.size(); j++)
+            {
+                std::cout << productions[production]->rhs[j].humanReadableName << " ";
+            }
+            if (productions[production]->rhs.size() == 0)
+            {
+                std::cout << "{}";
+            }
+            std::cout << std::endl;
+            std::cout << "current situation: ";
+            // print current situation according to the stack
+            for (int i = 0; i < symbolStack.size()-1; i++)
+            {
+                std::cout << symbolStack[i].humanReadableName << " ";
+            }
+            std::cout << "| " <<  symbolStack.back().humanReadableName << std::endl;
         }
         else
         {
+            std::cout << "Reduce by production " << nextState << std::endl;
+            std::cout << "Accepted" << std::endl;
             return true;
         }
+        std::cout << std::endl;
     }
     return false;
 }
