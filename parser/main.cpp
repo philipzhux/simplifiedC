@@ -170,7 +170,7 @@ int main()
     parser.addProduction(_exp9, {_id});
     parser.addProduction(_exp9, {_lpar, _exp, _rpar});
     parser.build();
-
+    std::cout<<"Rep count: "<<parser.repCount<<std::endl;
 }
 
     // Scanner scanner("test.txt");

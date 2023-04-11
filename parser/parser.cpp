@@ -7,6 +7,7 @@ Parser::Parser(Symbol startLhs, std::vector<Symbol> startRhs, Terminal endSymbol
     // augmented production should be the production 0
     // reduced by production 0 is the accept state
     assert(startProductionId == 0);
+    repCount = 0;
 }
 
 /// @brief get the closure of a configuration
@@ -126,11 +127,13 @@ void Parser::build()
                 {
                     configurationSets.push_back(newConfigurationSet);
                     std::cout<<"new configuration set: "<<newConfigurationSet.id<<std::endl;
+                    std::cout<<"current repCount: "<<repCount<<std::endl;
                     // printConfigurationSet(newConfigurationSet);
                     // changed = true;
                 }
                 else
                 {
+                    repCount++;
                     newConfigurationSet = *found;
                     ConfigurationSet::rollbackId();
                 }
