@@ -1,7 +1,7 @@
 #include "parser.h"
 #include <iostream>
 
-Parser::Parser(){}
+Parser::Parser() {}
 
 Parser::Parser(Symbol startLhs, std::vector<Symbol> startRhs, Terminal endSymbol) : endSymbol(endSymbol)
 {
@@ -25,7 +25,7 @@ std::vector<Configuration> Parser::getClosure(const Configuration &initConfigura
     {
         changed = false;
         size_t size = closure.size();
-        for(; i<size; i++)
+        for (; i < size; i++)
         {
             if (closure[i].isComplete())
             {
@@ -34,13 +34,13 @@ std::vector<Configuration> Parser::getClosure(const Configuration &initConfigura
             Symbol symbolAfterDot = closure[i].getSymbolAfterDot();
             if (!symbolAfterDot.isTerminal)
             {
-                for (const auto& production : productions)
+                for (const auto &production : productions)
                 {
                     if (production->lhs == symbolAfterDot)
                     {
                         // found a production with same lhs, insert it into the closure
                         // expanding symbolAfterDot
-                        for (const auto& configLookahead : closure[i].lookaheads)
+                        for (const auto &configLookahead : closure[i].lookaheads)
                         {
                             // calculate the lookahead for the new configuration
                             std::vector<Symbol> followSymbols;
@@ -53,7 +53,7 @@ std::vector<Configuration> Parser::getClosure(const Configuration &initConfigura
                             followSymbols.push_back(configLookahead);
 
                             // lookahead is the first set of [the symbols after the expanded symbol] + [the lookahead of the original configuration]
-                            for (const auto& lookahead : getFirstSet(followSymbols))
+                            for (const auto &lookahead : getFirstSet(followSymbols))
                             {
                                 // flag to indicate whether the new configuration is already in the closure
                                 // after the loop, if it is still true, then the new configuration is not in the closure
@@ -102,7 +102,7 @@ void Parser::build()
     // build configuration sets and action table
     Configuration initialConfig = Configuration(productions[startProductionId], 0, {endSymbol});
     std::vector<Configuration> initialClosure = getClosure(initialConfig);
-    ConfigurationSet initialConfigurationSet = ConfigurationSet({initialClosure.begin(),initialClosure.end()}, ConfigurationSet::getId());
+    ConfigurationSet initialConfigurationSet = ConfigurationSet({initialClosure.begin(), initialClosure.end()}, ConfigurationSet::getId());
     configurationSets.push_back(initialConfigurationSet);
     size_t i = 0;
     while (true)
@@ -113,7 +113,7 @@ void Parser::build()
         {
             // auto configurationSet = configurationSets[i];
             std::unordered_map<Symbol, std::unordered_set<Configuration>> transitionMap;
-            for (const auto& configuration : configurationSets[i].configurations)
+            for (const auto &configuration : configurationSets[i].configurations)
             {
                 if (configuration.isComplete())
                 {
@@ -123,7 +123,7 @@ void Parser::build()
                 std::vector<Configuration> closure = getClosure(transition.second);
                 transitionMap[transition.first].insert(closure.begin(), closure.end());
             }
-            for (const auto& transition : transitionMap)
+            for (const auto &transition : transitionMap)
             {
                 ConfigurationSet newConfigurationSet = ConfigurationSet(transition.second, ConfigurationSet::getId());
                 auto found = std::find(configurationSets.begin(), configurationSets.end(), newConfigurationSet);
@@ -140,7 +140,7 @@ void Parser::build()
                     ConfigurationSet::rollbackId();
                     repCount++;
                 }
-                std::unordered_map<std::pair<int,int>,int>& targetTable = transition.first.isTerminal ? actionTable : gotoTable;
+                std::unordered_map<std::pair<int, int>, int> &targetTable = transition.first.isTerminal ? actionTable : gotoTable;
                 // printActionTable();
                 // printGotoTable();
                 if (targetTable.count(std::make_pair(configurationSets[i].id, transition.first.id)) == 0)
@@ -152,7 +152,7 @@ void Parser::build()
                 {
                     if (targetTable[std::make_pair(configurationSets[i].id, transition.first.id)] != newConfigurationSet.id)
                     {
-                        if(transition.first.isTerminal)
+                        if (transition.first.isTerminal)
                         {
                             std::cout << "Error: conflict in action table" << std::endl;
                             std::cout << "State: " << configurationSets[i].id << std::endl;
@@ -168,14 +168,13 @@ void Parser::build()
                             std::cout << "Existing goto: " << targetTable[std::make_pair(configurationSets[i].id, transition.first.id)] << std::endl;
                             std::cout << "New goto: " << newConfigurationSet.id << std::endl;
                         }
-                        
+
                         printConfigurationSets();
                         printActionTable();
                         printGotoTable();
                         exit(1);
                     }
                 }
-
             }
         }
         if (!changed)
@@ -184,20 +183,48 @@ void Parser::build()
         }
     }
     // now consider the reduction case
-    for (const auto& configurationSet : configurationSets)
+    for (const auto &configurationSet : configurationSets)
     {
-        for (const auto& configuration : configurationSet.configurations)
+        for (const auto &configuration : configurationSet.configurations)
         {
             if (configuration.isComplete())
             {
-                for (const auto& configLookahead : configuration.lookaheads)
+
+                for (const auto &configLookahead : configuration.lookaheads)
                 {
+                    if (actionTable.count(std::make_pair(configurationSet.id, configLookahead.id)) != 0)
+                    {
+                        bool tolerate = false;
+                        if (actionTable[std::make_pair(configurationSet.id, configLookahead.id)] > 0)
+                        {
+                            std::cout << "Warning: shift/reduce conflict, use shift instead" << std::endl;
+                            std::cout << "Ignore possible shift by rule: " << configuration.production->lhs.humanReadableName << " -> ";
+                            for (const auto &symbol : configuration.production->rhs)
+                            {
+                                std::cout << symbol.humanReadableName << " ";
+                            }
+                            std::cout << std::endl;
+                            tolerate = true;
+                        }
+                        else
+                        {
+                            std::cout << "Error: reduce/reduce conflict" << std::endl;
+                        }
+
+                        if (!tolerate)
+                        {
+                            exit(1);
+                        }
+                        else
+                        {
+                            continue;
+                        }
+                    }
                     actionTable[std::make_pair(configurationSet.id, configLookahead.id)] = -configuration.production->id;
                 }
             }
         }
     }
-    
 }
 
 /// @brief parse the input from the lexer
@@ -210,7 +237,7 @@ bool Parser::parse(std::vector<Symbol> input)
     stack.push_back(0);
     input.push_back(endSymbol);
     size_t inputCursor = 0;
-    while (inputCursor<input.size())
+    while (inputCursor < input.size())
     {
         int currentState = stack.back();
         Symbol currentSymbol = input[inputCursor];
@@ -239,10 +266,9 @@ bool Parser::parse(std::vector<Symbol> input)
                 std::cout << symbolStack[i].humanReadableName << " ";
             }
             std::cout << "|" << std::endl;
-            
         }
         else if (nextState < 0)
-        {   
+        {
             int production = -nextState;
             // print reduce message
 
@@ -252,8 +278,8 @@ bool Parser::parse(std::vector<Symbol> input)
                 stack.pop_back();
                 symbolStack.pop_back();
             }
-            
-            if(gotoTable.count(std::make_pair(stack.back(), productions[production]->lhs.id)) == 0)
+
+            if (gotoTable.count(std::make_pair(stack.back(), productions[production]->lhs.id)) == 0)
             {
                 // print error message
                 std::cout << "Error: unexpected symbol " << currentSymbol.humanReadableName << " at position " << inputCursor << std::endl;
@@ -264,13 +290,13 @@ bool Parser::parse(std::vector<Symbol> input)
 
             // push the next state according to the goto table
             nextState = gotoTable[std::make_pair(stack.back(), productions[production]->lhs.id)];
-            
+
             stack.push_back(nextState);
             symbolStack.push_back(productions[production]->lhs);
 
             /*
             Sample shift message
-            state: 49	next type: SEMI		reduce by grammar 9: declaration->ID 
+            state: 49	next type: SEMI		reduce by grammar 9: declaration->ID
             current situation: INT | declaration
             */
             std::cout << "state: " << currentState << "\t";
@@ -287,11 +313,11 @@ bool Parser::parse(std::vector<Symbol> input)
             std::cout << std::endl;
             std::cout << "current situation: ";
             // print current situation according to the stack
-            for (int i = 0; i < int(symbolStack.size())-1; i++)
+            for (int i = 0; i < int(symbolStack.size()) - 1; i++)
             {
                 std::cout << symbolStack[i].humanReadableName << " ";
             }
-            std::cout << "| " <<  symbolStack.back().humanReadableName << std::endl;
+            std::cout << "| " << symbolStack.back().humanReadableName << std::endl;
         }
         else
         {
@@ -300,7 +326,8 @@ bool Parser::parse(std::vector<Symbol> input)
             {
                 std::cout << productions[0]->rhs[j].humanReadableName << " ";
             }
-            std::cout<< std::endl << std::endl;
+            std::cout << std::endl
+                      << std::endl;
             std::cout << "Accepted" << std::endl;
             return true;
         }
@@ -342,7 +369,7 @@ std::unordered_set<Symbol> Parser::getFirstSet(Symbol symbol)
     }
     firstSetRecursionMemo.insert(symbol);
     std::unordered_set<Symbol> firstSet;
-    for (const auto& production : productions)
+    for (const auto &production : productions)
     {
         if (production->lhs == symbol)
         {
@@ -354,12 +381,11 @@ std::unordered_set<Symbol> Parser::getFirstSet(Symbol symbol)
                 }
                 else
                 {
-                    if(firstSetRecursionMemo.count(production->rhs[i]) == 0)
+                    if (firstSetRecursionMemo.count(production->rhs[i]) == 0)
                     {
                         std::unordered_set<Symbol> firstSetOfRhs = getFirstSet(production->rhs[i]);
                         firstSet.insert(firstSetOfRhs.begin(), firstSetOfRhs.end());
                     }
-                    
                 }
                 if (nullableSymbols.count(production->rhs[i].id) == 0)
                 {
@@ -380,7 +406,7 @@ std::unordered_set<Symbol> Parser::getFirstSet(Symbol symbol)
 std::unordered_set<Symbol> Parser::getFirstSet(const std::vector<Symbol> &symbols)
 {
     std::unordered_set<Symbol> firstSet;
-    for (const auto& symbol : symbols)
+    for (const auto &symbol : symbols)
     {
         std::unordered_set<Symbol> firstSetOfSymbol = getFirstSet(symbol);
         firstSet.insert(firstSetOfSymbol.begin(), firstSetOfSymbol.end());
@@ -395,11 +421,11 @@ std::unordered_set<Symbol> Parser::getFirstSet(const std::vector<Symbol> &symbol
 /// @brief print the productions
 void Parser::printProductions() const
 {
-    for (const auto& production : productions)
+    for (const auto &production : productions)
     {
         std::cout << production->id << ": ";
         std::cout << production->lhs.humanReadableName << " -> ";
-        for (const auto& symbol : production->rhs)
+        for (const auto &symbol : production->rhs)
         {
             std::cout << symbol.humanReadableName << " ";
         }
@@ -411,7 +437,7 @@ void Parser::printProductions() const
 void Parser::printConfigurationSet(const ConfigurationSet &configurationSet) const
 {
     std::cout << "Configuration Set " << configurationSet.id << std::endl;
-    for (const auto& configuration : configurationSet.configurations)
+    for (const auto &configuration : configurationSet.configurations)
     {
         std::cout << configuration.production->lhs.humanReadableName << " -> ";
         for (size_t i = 0; i < configuration.production->rhs.size(); i++)
@@ -427,7 +453,7 @@ void Parser::printConfigurationSet(const ConfigurationSet &configurationSet) con
             std::cout << ".";
         }
         std::cout << " , ";
-        for (const auto& lookahead : configuration.lookaheads)
+        for (const auto &lookahead : configuration.lookaheads)
         {
             std::cout << lookahead.humanReadableName << " ";
         }
@@ -438,7 +464,7 @@ void Parser::printConfigurationSet(const ConfigurationSet &configurationSet) con
 /// @brief print configuration sets of the parser
 void Parser::printConfigurationSets() const
 {
-    for (const auto& configurationSet : configurationSets)
+    for (const auto &configurationSet : configurationSets)
     {
         printConfigurationSet(configurationSet);
     }
@@ -448,7 +474,7 @@ void Parser::printConfigurationSets() const
 void Parser::printActionTable() const
 {
     std::cout << "Action Table" << std::endl;
-    for (const auto& entry : actionTable)
+    for (const auto &entry : actionTable)
     {
         std::cout << entry.first.first << " " << entry.first.second << " " << entry.second << std::endl;
     }
@@ -458,7 +484,7 @@ void Parser::printActionTable() const
 void Parser::printGotoTable() const
 {
     std::cout << "Goto Table" << std::endl;
-    for (const auto& entry : gotoTable)
+    for (const auto &entry : gotoTable)
     {
         std::cout << entry.first.first << " " << entry.first.second << " " << entry.second << std::endl;
     }
