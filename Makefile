@@ -26,7 +26,7 @@ $(BUILDER_EXE): $(BUILDER_OBJ) $(SCANNER_SRC)
 	$(CXX) $(CXXFLAGS) $^ -o $@
 
 $(PARSER_EXE): $(PARSER_OBJ) $(SCANNER_SRC)
-	$(CXX) $(CXXFLAGS) $(PARSER_OBJ) $(SCANNER_SRC) -o $@
+	$(CXX) $(CXXFLAGS) $^ -o $@
 
 build/%.o: %.cpp
 	@mkdir -p $(dir $@)
