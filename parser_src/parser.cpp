@@ -211,13 +211,13 @@ void Parser::build()
                         bool tolerate = false;
                         if (actionTable[std::make_pair(configurationSet.id, configLookahead.id)] > 0)
                         {
-                            std::cout << "Warning: shift/reduce conflict, use shift instead" << std::endl;
-                            std::cout << "Ignore possible shift by rule: " << configuration.production->lhs.humanReadableName << " -> ";
+                            std::cout << "[Warning] shift/reduce conflict, use shift instead" << std::endl;
+                            std::cout << "Ignore possible reduce by rule: " << configuration.production->lhs.humanReadableName << " -> ";
                             for (const auto &symbol : configuration.production->rhs)
                             {
                                 std::cout << symbol.humanReadableName << " ";
                             }
-                            std::cout << std::endl;
+                            std::cout << std::endl << std::endl;
                             tolerate = true;
                         }
                         else
