@@ -18,13 +18,21 @@ Parser::Parser(Symbol startLhs, std::vector<Symbol> startRhs, Terminal endSymbol
 std::vector<Configuration> Parser::getClosure(const Configuration &initConfiguration)
 {
     std::vector<Configuration> closure;
-    closure.push_back(initConfiguration);
-    bool changed = true;
+    bool added_config = true;
+    bool modified_config = true;
     size_t i = 0;
-    while (changed) // keep expanding until no new configuration is added
+    size_t modified_point = 0;
+    closure.push_back(initConfiguration);
+    while (added_config||modified_config) // keep expanding until no new configuration is added or modified
     {
-        changed = false;
+        // by default, start from newly added configurations
+        // if the closure is modified, then start from the modified point
+        if (modified_config && i > modified_point) i = modified_point;
         size_t size = closure.size();
+        added_config = false;
+        modified_config = false;
+        modified_point = size;
+       
         for (; i < size; i++)
         {
             if (closure[i].isComplete())
@@ -71,7 +79,13 @@ std::vector<Configuration> Parser::getClosure(const Configuration &initConfigura
                                             // found a configuration with same production and dot position, but different lookahead
                                             // merge the lookaheads
                                             closure[j].lookaheads.insert(lookahead);
-                                            changed = true;
+                                            if(j<size) {
+                                                // if the configuration is newly added, it is not counted as modified
+                                                // otherwise, it is modified
+                                                modified_config = true;
+                                                // move the modified point to the leftmost modified configuration
+                                                if(j<modified_point) modified_point = j;
+                                            }
                                         }
 
                                         // at this point the new configuration is already in the closure
@@ -83,7 +97,7 @@ std::vector<Configuration> Parser::getClosure(const Configuration &initConfigura
                                 {
                                     // insert the new configuration
                                     closure.push_back({production, 0, {lookahead}});
-                                    changed = true;
+                                    added_config = true;
                                 }
                             }
                         }
