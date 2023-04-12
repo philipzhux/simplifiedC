@@ -1,0 +1,536 @@
+Scanned Tokens:
+INT ID COMMA ID COMMA ID SEMI ID ASSIGN INT_NUM PLUS INT_NUM MUL_OP INT_NUM SEMI ID ASSIGN INT_NUM MUL_OP INT_NUM MINUS ID DIV_OP INT_NUM SEMI ID ASSIGN NOT_OP LPAR ID GT INT_NUM RPAR ANDAND ID LT INT_NUM OROR INT_NUM SHL_OP INT_NUM EQ INT_NUM PLUS INT_NUM MUL_OP LPAR INT_NUM MINUS INT_NUM SHR_OP INT_NUM RPAR DIV_OP INT_NUM SEMI RETURN SEMI EOF 
+
+Parsing Process:
+state: 0	next type: INT		shift to state 13
+current situation: INT | 
+
+state: 13	next type: ID		shift to state 49
+current situation: INT ID | 
+
+state: 49	next type: COMMA		reduce by grammar 9: declaration->ID 
+current situation: INT | declaration
+
+state: 13	next type: declaration		shift to state 50
+current situation: INT declaration | 
+
+state: 50	next type: COMMA		reduce by grammar 6: declaration_list->declaration 
+current situation: INT | declaration_list
+
+state: 13	next type: declaration_list		shift to state 51
+current situation: INT declaration_list | 
+
+state: 51	next type: COMMA		shift to state 93
+current situation: INT declaration_list COMMA | 
+
+state: 93	next type: ID		shift to state 49
+current situation: INT declaration_list COMMA ID | 
+
+state: 49	next type: COMMA		reduce by grammar 9: declaration->ID 
+current situation: INT declaration_list COMMA | declaration
+
+state: 93	next type: declaration		shift to state 150
+current situation: INT declaration_list COMMA declaration | 
+
+state: 150	next type: COMMA		reduce by grammar 5: declaration_list->declaration_list COMMA declaration 
+current situation: INT | declaration_list
+
+state: 13	next type: declaration_list		shift to state 51
+current situation: INT declaration_list | 
+
+state: 51	next type: COMMA		shift to state 93
+current situation: INT declaration_list COMMA | 
+
+state: 93	next type: ID		shift to state 49
+current situation: INT declaration_list COMMA ID | 
+
+state: 49	next type: SEMI		reduce by grammar 9: declaration->ID 
+current situation: INT declaration_list COMMA | declaration
+
+state: 93	next type: declaration		shift to state 150
+current situation: INT declaration_list COMMA declaration | 
+
+state: 150	next type: SEMI		reduce by grammar 5: declaration_list->declaration_list COMMA declaration 
+current situation: INT | declaration_list
+
+state: 13	next type: declaration_list		shift to state 51
+current situation: INT declaration_list | 
+
+state: 51	next type: SEMI		shift to state 94
+current situation: INT declaration_list SEMI | 
+
+state: 94	next type: ID		reduce by grammar 4: var_declaration->INT declaration_list SEMI 
+current situation: | var_declaration
+
+state: 0	next type: var_declaration		shift to state 14
+current situation: var_declaration | 
+
+state: 14	next type: ID		reduce by grammar 3: var_declarations->var_declaration 
+current situation: | var_declarations
+
+state: 0	next type: var_declarations		shift to state 8
+current situation: var_declarations | 
+
+state: 8	next type: ID		shift to state 20
+current situation: var_declarations ID | 
+
+state: 20	next type: ASSIGN		shift to state 53
+current situation: var_declarations ID ASSIGN | 
+
+state: 53	next type: INT_NUM		shift to state 100
+current situation: var_declarations ID ASSIGN INT_NUM | 
+
+state: 100	next type: PLUS		reduce by grammar 34: exp->INT_NUM 
+current situation: var_declarations ID ASSIGN | exp
+
+state: 53	next type: exp		shift to state 101
+current situation: var_declarations ID ASSIGN exp | 
+
+state: 101	next type: PLUS		shift to state 163
+current situation: var_declarations ID ASSIGN exp PLUS | 
+
+state: 163	next type: INT_NUM		shift to state 100
+current situation: var_declarations ID ASSIGN exp PLUS INT_NUM | 
+
+state: 100	next type: MUL_OP		reduce by grammar 34: exp->INT_NUM 
+current situation: var_declarations ID ASSIGN exp PLUS | exp
+
+state: 163	next type: exp		shift to state 245
+current situation: var_declarations ID ASSIGN exp PLUS exp | 
+
+state: 245	next type: MUL_OP		shift to state 164
+current situation: var_declarations ID ASSIGN exp PLUS exp MUL_OP | 
+
+state: 164	next type: INT_NUM		shift to state 100
+current situation: var_declarations ID ASSIGN exp PLUS exp MUL_OP INT_NUM | 
+
+state: 100	next type: SEMI		reduce by grammar 34: exp->INT_NUM 
+current situation: var_declarations ID ASSIGN exp PLUS exp MUL_OP | exp
+
+state: 164	next type: exp		shift to state 246
+current situation: var_declarations ID ASSIGN exp PLUS exp MUL_OP exp | 
+
+state: 246	next type: SEMI		reduce by grammar 42: exp->exp MUL_OP exp 
+current situation: var_declarations ID ASSIGN exp PLUS | exp
+
+state: 163	next type: exp		shift to state 245
+current situation: var_declarations ID ASSIGN exp PLUS exp | 
+
+state: 245	next type: SEMI		reduce by grammar 40: exp->exp PLUS exp 
+current situation: var_declarations ID ASSIGN | exp
+
+state: 53	next type: exp		shift to state 101
+current situation: var_declarations ID ASSIGN exp | 
+
+state: 101	next type: SEMI		reduce by grammar 25: assign_statement->ID ASSIGN exp 
+current situation: var_declarations | assign_statement
+
+state: 8	next type: assign_statement		shift to state 10
+current situation: var_declarations assign_statement | 
+
+state: 10	next type: SEMI		shift to state 46
+current situation: var_declarations assign_statement SEMI | 
+
+state: 46	next type: ID		reduce by grammar 14: statement->assign_statement SEMI 
+current situation: var_declarations | statement
+
+state: 8	next type: statement		shift to state 17
+current situation: var_declarations statement | 
+
+state: 17	next type: ID		reduce by grammar 13: statements->statement 
+current situation: var_declarations | statements
+
+state: 8	next type: statements		shift to state 30
+current situation: var_declarations statements | 
+
+state: 30	next type: ID		shift to state 20
+current situation: var_declarations statements ID | 
+
+state: 20	next type: ASSIGN		shift to state 53
+current situation: var_declarations statements ID ASSIGN | 
+
+state: 53	next type: INT_NUM		shift to state 100
+current situation: var_declarations statements ID ASSIGN INT_NUM | 
+
+state: 100	next type: MUL_OP		reduce by grammar 34: exp->INT_NUM 
+current situation: var_declarations statements ID ASSIGN | exp
+
+state: 53	next type: exp		shift to state 101
+current situation: var_declarations statements ID ASSIGN exp | 
+
+state: 101	next type: MUL_OP		shift to state 164
+current situation: var_declarations statements ID ASSIGN exp MUL_OP | 
+
+state: 164	next type: INT_NUM		shift to state 100
+current situation: var_declarations statements ID ASSIGN exp MUL_OP INT_NUM | 
+
+state: 100	next type: MINUS		reduce by grammar 34: exp->INT_NUM 
+current situation: var_declarations statements ID ASSIGN exp MUL_OP | exp
+
+state: 164	next type: exp		shift to state 246
+current situation: var_declarations statements ID ASSIGN exp MUL_OP exp | 
+
+state: 246	next type: MINUS		reduce by grammar 42: exp->exp MUL_OP exp 
+current situation: var_declarations statements ID ASSIGN | exp
+
+state: 53	next type: exp		shift to state 101
+current situation: var_declarations statements ID ASSIGN exp | 
+
+state: 101	next type: MINUS		shift to state 162
+current situation: var_declarations statements ID ASSIGN exp MINUS | 
+
+state: 162	next type: ID		shift to state 99
+current situation: var_declarations statements ID ASSIGN exp MINUS ID | 
+
+state: 99	next type: DIV_OP		reduce by grammar 35: exp->ID 
+current situation: var_declarations statements ID ASSIGN exp MINUS | exp
+
+state: 162	next type: exp		shift to state 244
+current situation: var_declarations statements ID ASSIGN exp MINUS exp | 
+
+state: 244	next type: DIV_OP		shift to state 161
+current situation: var_declarations statements ID ASSIGN exp MINUS exp DIV_OP | 
+
+state: 161	next type: INT_NUM		shift to state 100
+current situation: var_declarations statements ID ASSIGN exp MINUS exp DIV_OP INT_NUM | 
+
+state: 100	next type: SEMI		reduce by grammar 34: exp->INT_NUM 
+current situation: var_declarations statements ID ASSIGN exp MINUS exp DIV_OP | exp
+
+state: 161	next type: exp		shift to state 243
+current situation: var_declarations statements ID ASSIGN exp MINUS exp DIV_OP exp | 
+
+state: 243	next type: SEMI		reduce by grammar 43: exp->exp DIV_OP exp 
+current situation: var_declarations statements ID ASSIGN exp MINUS | exp
+
+state: 162	next type: exp		shift to state 244
+current situation: var_declarations statements ID ASSIGN exp MINUS exp | 
+
+state: 244	next type: SEMI		reduce by grammar 41: exp->exp MINUS exp 
+current situation: var_declarations statements ID ASSIGN | exp
+
+state: 53	next type: exp		shift to state 101
+current situation: var_declarations statements ID ASSIGN exp | 
+
+state: 101	next type: SEMI		reduce by grammar 25: assign_statement->ID ASSIGN exp 
+current situation: var_declarations statements | assign_statement
+
+state: 30	next type: assign_statement		shift to state 10
+current situation: var_declarations statements assign_statement | 
+
+state: 10	next type: SEMI		shift to state 46
+current situation: var_declarations statements assign_statement SEMI | 
+
+state: 46	next type: ID		reduce by grammar 14: statement->assign_statement SEMI 
+current situation: var_declarations statements | statement
+
+state: 30	next type: statement		shift to state 48
+current situation: var_declarations statements statement | 
+
+state: 48	next type: ID		reduce by grammar 12: statements->statements statement 
+current situation: var_declarations | statements
+
+state: 8	next type: statements		shift to state 30
+current situation: var_declarations statements | 
+
+state: 30	next type: ID		shift to state 20
+current situation: var_declarations statements ID | 
+
+state: 20	next type: ASSIGN		shift to state 53
+current situation: var_declarations statements ID ASSIGN | 
+
+state: 53	next type: NOT_OP		shift to state 98
+current situation: var_declarations statements ID ASSIGN NOT_OP | 
+
+state: 98	next type: LPAR		shift to state 97
+current situation: var_declarations statements ID ASSIGN NOT_OP LPAR | 
+
+state: 97	next type: ID		shift to state 60
+current situation: var_declarations statements ID ASSIGN NOT_OP LPAR ID | 
+
+state: 60	next type: GT		reduce by grammar 35: exp->ID 
+current situation: var_declarations statements ID ASSIGN NOT_OP LPAR | exp
+
+state: 97	next type: exp		shift to state 153
+current situation: var_declarations statements ID ASSIGN NOT_OP LPAR exp | 
+
+state: 153	next type: GT		shift to state 127
+current situation: var_declarations statements ID ASSIGN NOT_OP LPAR exp GT | 
+
+state: 127	next type: INT_NUM		shift to state 61
+current situation: var_declarations statements ID ASSIGN NOT_OP LPAR exp GT INT_NUM | 
+
+state: 61	next type: RPAR		reduce by grammar 34: exp->INT_NUM 
+current situation: var_declarations statements ID ASSIGN NOT_OP LPAR exp GT | exp
+
+state: 127	next type: exp		shift to state 221
+current situation: var_declarations statements ID ASSIGN NOT_OP LPAR exp GT exp | 
+
+state: 221	next type: RPAR		reduce by grammar 45: exp->exp GT exp 
+current situation: var_declarations statements ID ASSIGN NOT_OP LPAR | exp
+
+state: 97	next type: exp		shift to state 153
+current situation: var_declarations statements ID ASSIGN NOT_OP LPAR exp | 
+
+state: 153	next type: RPAR		shift to state 236
+current situation: var_declarations statements ID ASSIGN NOT_OP LPAR exp RPAR | 
+
+state: 236	next type: ANDAND		reduce by grammar 54: exp->LPAR exp RPAR 
+current situation: var_declarations statements ID ASSIGN NOT_OP | exp
+
+state: 98	next type: exp		shift to state 154
+current situation: var_declarations statements ID ASSIGN NOT_OP exp | 
+
+state: 154	next type: ANDAND		reduce by grammar 37: exp->NOT_OP exp 
+current situation: var_declarations statements ID ASSIGN | exp
+
+state: 53	next type: exp		shift to state 101
+current situation: var_declarations statements ID ASSIGN exp | 
+
+state: 101	next type: ANDAND		shift to state 159
+current situation: var_declarations statements ID ASSIGN exp ANDAND | 
+
+state: 159	next type: ID		shift to state 99
+current situation: var_declarations statements ID ASSIGN exp ANDAND ID | 
+
+state: 99	next type: LT		reduce by grammar 35: exp->ID 
+current situation: var_declarations statements ID ASSIGN exp ANDAND | exp
+
+state: 159	next type: exp		shift to state 241
+current situation: var_declarations statements ID ASSIGN exp ANDAND exp | 
+
+state: 241	next type: LT		shift to state 165
+current situation: var_declarations statements ID ASSIGN exp ANDAND exp LT | 
+
+state: 165	next type: INT_NUM		shift to state 100
+current situation: var_declarations statements ID ASSIGN exp ANDAND exp LT INT_NUM | 
+
+state: 100	next type: OROR		reduce by grammar 34: exp->INT_NUM 
+current situation: var_declarations statements ID ASSIGN exp ANDAND exp LT | exp
+
+state: 165	next type: exp		shift to state 247
+current situation: var_declarations statements ID ASSIGN exp ANDAND exp LT exp | 
+
+state: 247	next type: OROR		reduce by grammar 44: exp->exp LT exp 
+current situation: var_declarations statements ID ASSIGN exp ANDAND | exp
+
+state: 159	next type: exp		shift to state 241
+current situation: var_declarations statements ID ASSIGN exp ANDAND exp | 
+
+state: 241	next type: OROR		reduce by grammar 52: exp->exp ANDAND exp 
+current situation: var_declarations statements ID ASSIGN | exp
+
+state: 53	next type: exp		shift to state 101
+current situation: var_declarations statements ID ASSIGN exp | 
+
+state: 101	next type: OROR		shift to state 156
+current situation: var_declarations statements ID ASSIGN exp OROR | 
+
+state: 156	next type: INT_NUM		shift to state 100
+current situation: var_declarations statements ID ASSIGN exp OROR INT_NUM | 
+
+state: 100	next type: SHL_OP		reduce by grammar 34: exp->INT_NUM 
+current situation: var_declarations statements ID ASSIGN exp OROR | exp
+
+state: 156	next type: exp		shift to state 238
+current situation: var_declarations statements ID ASSIGN exp OROR exp | 
+
+state: 238	next type: SHL_OP		shift to state 170
+current situation: var_declarations statements ID ASSIGN exp OROR exp SHL_OP | 
+
+state: 170	next type: INT_NUM		shift to state 100
+current situation: var_declarations statements ID ASSIGN exp OROR exp SHL_OP INT_NUM | 
+
+state: 100	next type: EQ		reduce by grammar 34: exp->INT_NUM 
+current situation: var_declarations statements ID ASSIGN exp OROR exp SHL_OP | exp
+
+state: 170	next type: exp		shift to state 252
+current situation: var_declarations statements ID ASSIGN exp OROR exp SHL_OP exp | 
+
+state: 252	next type: EQ		reduce by grammar 50: exp->exp SHL_OP exp 
+current situation: var_declarations statements ID ASSIGN exp OROR | exp
+
+state: 156	next type: exp		shift to state 238
+current situation: var_declarations statements ID ASSIGN exp OROR exp | 
+
+state: 238	next type: EQ		shift to state 167
+current situation: var_declarations statements ID ASSIGN exp OROR exp EQ | 
+
+state: 167	next type: INT_NUM		shift to state 100
+current situation: var_declarations statements ID ASSIGN exp OROR exp EQ INT_NUM | 
+
+state: 100	next type: PLUS		reduce by grammar 34: exp->INT_NUM 
+current situation: var_declarations statements ID ASSIGN exp OROR exp EQ | exp
+
+state: 167	next type: exp		shift to state 249
+current situation: var_declarations statements ID ASSIGN exp OROR exp EQ exp | 
+
+state: 249	next type: PLUS		shift to state 163
+current situation: var_declarations statements ID ASSIGN exp OROR exp EQ exp PLUS | 
+
+state: 163	next type: INT_NUM		shift to state 100
+current situation: var_declarations statements ID ASSIGN exp OROR exp EQ exp PLUS INT_NUM | 
+
+state: 100	next type: MUL_OP		reduce by grammar 34: exp->INT_NUM 
+current situation: var_declarations statements ID ASSIGN exp OROR exp EQ exp PLUS | exp
+
+state: 163	next type: exp		shift to state 245
+current situation: var_declarations statements ID ASSIGN exp OROR exp EQ exp PLUS exp | 
+
+state: 245	next type: MUL_OP		shift to state 164
+current situation: var_declarations statements ID ASSIGN exp OROR exp EQ exp PLUS exp MUL_OP | 
+
+state: 164	next type: LPAR		shift to state 97
+current situation: var_declarations statements ID ASSIGN exp OROR exp EQ exp PLUS exp MUL_OP LPAR | 
+
+state: 97	next type: INT_NUM		shift to state 61
+current situation: var_declarations statements ID ASSIGN exp OROR exp EQ exp PLUS exp MUL_OP LPAR INT_NUM | 
+
+state: 61	next type: MINUS		reduce by grammar 34: exp->INT_NUM 
+current situation: var_declarations statements ID ASSIGN exp OROR exp EQ exp PLUS exp MUL_OP LPAR | exp
+
+state: 97	next type: exp		shift to state 153
+current situation: var_declarations statements ID ASSIGN exp OROR exp EQ exp PLUS exp MUL_OP LPAR exp | 
+
+state: 153	next type: MINUS		shift to state 123
+current situation: var_declarations statements ID ASSIGN exp OROR exp EQ exp PLUS exp MUL_OP LPAR exp MINUS | 
+
+state: 123	next type: INT_NUM		shift to state 61
+current situation: var_declarations statements ID ASSIGN exp OROR exp EQ exp PLUS exp MUL_OP LPAR exp MINUS INT_NUM | 
+
+state: 61	next type: SHR_OP		reduce by grammar 34: exp->INT_NUM 
+current situation: var_declarations statements ID ASSIGN exp OROR exp EQ exp PLUS exp MUL_OP LPAR exp MINUS | exp
+
+state: 123	next type: exp		shift to state 217
+current situation: var_declarations statements ID ASSIGN exp OROR exp EQ exp PLUS exp MUL_OP LPAR exp MINUS exp | 
+
+state: 217	next type: SHR_OP		reduce by grammar 41: exp->exp MINUS exp 
+current situation: var_declarations statements ID ASSIGN exp OROR exp EQ exp PLUS exp MUL_OP LPAR | exp
+
+state: 97	next type: exp		shift to state 153
+current situation: var_declarations statements ID ASSIGN exp OROR exp EQ exp PLUS exp MUL_OP LPAR exp | 
+
+state: 153	next type: SHR_OP		shift to state 115
+current situation: var_declarations statements ID ASSIGN exp OROR exp EQ exp PLUS exp MUL_OP LPAR exp SHR_OP | 
+
+state: 115	next type: INT_NUM		shift to state 61
+current situation: var_declarations statements ID ASSIGN exp OROR exp EQ exp PLUS exp MUL_OP LPAR exp SHR_OP INT_NUM | 
+
+state: 61	next type: RPAR		reduce by grammar 34: exp->INT_NUM 
+current situation: var_declarations statements ID ASSIGN exp OROR exp EQ exp PLUS exp MUL_OP LPAR exp SHR_OP | exp
+
+state: 115	next type: exp		shift to state 197
+current situation: var_declarations statements ID ASSIGN exp OROR exp EQ exp PLUS exp MUL_OP LPAR exp SHR_OP exp | 
+
+state: 197	next type: RPAR		reduce by grammar 51: exp->exp SHR_OP exp 
+current situation: var_declarations statements ID ASSIGN exp OROR exp EQ exp PLUS exp MUL_OP LPAR | exp
+
+state: 97	next type: exp		shift to state 153
+current situation: var_declarations statements ID ASSIGN exp OROR exp EQ exp PLUS exp MUL_OP LPAR exp | 
+
+state: 153	next type: RPAR		shift to state 236
+current situation: var_declarations statements ID ASSIGN exp OROR exp EQ exp PLUS exp MUL_OP LPAR exp RPAR | 
+
+state: 236	next type: DIV_OP		reduce by grammar 54: exp->LPAR exp RPAR 
+current situation: var_declarations statements ID ASSIGN exp OROR exp EQ exp PLUS exp MUL_OP | exp
+
+state: 164	next type: exp		shift to state 246
+current situation: var_declarations statements ID ASSIGN exp OROR exp EQ exp PLUS exp MUL_OP exp | 
+
+state: 246	next type: DIV_OP		reduce by grammar 42: exp->exp MUL_OP exp 
+current situation: var_declarations statements ID ASSIGN exp OROR exp EQ exp PLUS | exp
+
+state: 163	next type: exp		shift to state 245
+current situation: var_declarations statements ID ASSIGN exp OROR exp EQ exp PLUS exp | 
+
+state: 245	next type: DIV_OP		shift to state 161
+current situation: var_declarations statements ID ASSIGN exp OROR exp EQ exp PLUS exp DIV_OP | 
+
+state: 161	next type: INT_NUM		shift to state 100
+current situation: var_declarations statements ID ASSIGN exp OROR exp EQ exp PLUS exp DIV_OP INT_NUM | 
+
+state: 100	next type: SEMI		reduce by grammar 34: exp->INT_NUM 
+current situation: var_declarations statements ID ASSIGN exp OROR exp EQ exp PLUS exp DIV_OP | exp
+
+state: 161	next type: exp		shift to state 243
+current situation: var_declarations statements ID ASSIGN exp OROR exp EQ exp PLUS exp DIV_OP exp | 
+
+state: 243	next type: SEMI		reduce by grammar 43: exp->exp DIV_OP exp 
+current situation: var_declarations statements ID ASSIGN exp OROR exp EQ exp PLUS | exp
+
+state: 163	next type: exp		shift to state 245
+current situation: var_declarations statements ID ASSIGN exp OROR exp EQ exp PLUS exp | 
+
+state: 245	next type: SEMI		reduce by grammar 40: exp->exp PLUS exp 
+current situation: var_declarations statements ID ASSIGN exp OROR exp EQ | exp
+
+state: 167	next type: exp		shift to state 249
+current situation: var_declarations statements ID ASSIGN exp OROR exp EQ exp | 
+
+state: 249	next type: SEMI		reduce by grammar 46: exp->exp EQ exp 
+current situation: var_declarations statements ID ASSIGN exp OROR | exp
+
+state: 156	next type: exp		shift to state 238
+current situation: var_declarations statements ID ASSIGN exp OROR exp | 
+
+state: 238	next type: SEMI		reduce by grammar 53: exp->exp OROR exp 
+current situation: var_declarations statements ID ASSIGN | exp
+
+state: 53	next type: exp		shift to state 101
+current situation: var_declarations statements ID ASSIGN exp | 
+
+state: 101	next type: SEMI		reduce by grammar 25: assign_statement->ID ASSIGN exp 
+current situation: var_declarations statements | assign_statement
+
+state: 30	next type: assign_statement		shift to state 10
+current situation: var_declarations statements assign_statement | 
+
+state: 10	next type: SEMI		shift to state 46
+current situation: var_declarations statements assign_statement SEMI | 
+
+state: 46	next type: RETURN		reduce by grammar 14: statement->assign_statement SEMI 
+current situation: var_declarations statements | statement
+
+state: 30	next type: statement		shift to state 48
+current situation: var_declarations statements statement | 
+
+state: 48	next type: RETURN		reduce by grammar 12: statements->statements statement 
+current situation: var_declarations | statements
+
+state: 8	next type: statements		shift to state 30
+current situation: var_declarations statements | 
+
+state: 30	next type: RETURN		shift to state 15
+current situation: var_declarations statements RETURN | 
+
+state: 15	next type: SEMI		reduce by grammar 31: return_statement->RETURN 
+current situation: var_declarations statements | return_statement
+
+state: 30	next type: return_statement		shift to state 7
+current situation: var_declarations statements return_statement | 
+
+state: 7	next type: SEMI		shift to state 29
+current situation: var_declarations statements return_statement SEMI | 
+
+state: 29	next type: EOF		reduce by grammar 21: control_statement->return_statement SEMI 
+current situation: var_declarations statements | control_statement
+
+state: 30	next type: control_statement		shift to state 19
+current situation: var_declarations statements control_statement | 
+
+state: 19	next type: EOF		reduce by grammar 15: statement->control_statement 
+current situation: var_declarations statements | statement
+
+state: 30	next type: statement		shift to state 48
+current situation: var_declarations statements statement | 
+
+state: 48	next type: EOF		reduce by grammar 12: statements->statements statement 
+current situation: var_declarations | statements
+
+state: 8	next type: statements		shift to state 30
+current situation: var_declarations statements | 
+
+state: 30	next type: EOF		shift to state 69
+current situation: var_declarations statements EOF | 
+
+Accept!

@@ -1,0 +1,722 @@
+Scanned Tokens:
+INT ID SEMI INT ID SEMI INT ID SEMI ID ASSIGN ID PLUS ID MUL_OP ID SHL_OP INT_NUM SEMI IF LPAR ID GT ID RPAR LBRACE WRITE LPAR LPAR LPAR ID PLUS ID RPAR MUL_OP ID RPAR RPAR SEMI RBRACE ELSE LBRACE WHILE LPAR ID NOTEQ INT_NUM RPAR LBRACE READ LPAR ID RPAR SEMI RBRACE RBRACE DO LBRACE ID ASSIGN ID PLUS INT_NUM SEMI ID ASSIGN ID MINUS INT_NUM SEMI RBRACE WHILE LPAR ID LTEQ ID RPAR SEMI RETURN SEMI EOF 
+
+Parsing Process:
+state: 0	next type: INT		shift to state 13
+current situation: INT | 
+
+state: 13	next type: ID		shift to state 49
+current situation: INT ID | 
+
+state: 49	next type: SEMI		reduce by grammar 9: declaration->ID 
+current situation: INT | declaration
+
+state: 13	next type: declaration		shift to state 50
+current situation: INT declaration | 
+
+state: 50	next type: SEMI		reduce by grammar 6: declaration_list->declaration 
+current situation: INT | declaration_list
+
+state: 13	next type: declaration_list		shift to state 51
+current situation: INT declaration_list | 
+
+state: 51	next type: SEMI		shift to state 94
+current situation: INT declaration_list SEMI | 
+
+state: 94	next type: INT		reduce by grammar 4: var_declaration->INT declaration_list SEMI 
+current situation: | var_declaration
+
+state: 0	next type: var_declaration		shift to state 14
+current situation: var_declaration | 
+
+state: 14	next type: INT		reduce by grammar 3: var_declarations->var_declaration 
+current situation: | var_declarations
+
+state: 0	next type: var_declarations		shift to state 8
+current situation: var_declarations | 
+
+state: 8	next type: INT		shift to state 13
+current situation: var_declarations INT | 
+
+state: 13	next type: ID		shift to state 49
+current situation: var_declarations INT ID | 
+
+state: 49	next type: SEMI		reduce by grammar 9: declaration->ID 
+current situation: var_declarations INT | declaration
+
+state: 13	next type: declaration		shift to state 50
+current situation: var_declarations INT declaration | 
+
+state: 50	next type: SEMI		reduce by grammar 6: declaration_list->declaration 
+current situation: var_declarations INT | declaration_list
+
+state: 13	next type: declaration_list		shift to state 51
+current situation: var_declarations INT declaration_list | 
+
+state: 51	next type: SEMI		shift to state 94
+current situation: var_declarations INT declaration_list SEMI | 
+
+state: 94	next type: INT		reduce by grammar 4: var_declaration->INT declaration_list SEMI 
+current situation: var_declarations | var_declaration
+
+state: 8	next type: var_declaration		shift to state 31
+current situation: var_declarations var_declaration | 
+
+state: 31	next type: INT		reduce by grammar 2: var_declarations->var_declarations var_declaration 
+current situation: | var_declarations
+
+state: 0	next type: var_declarations		shift to state 8
+current situation: var_declarations | 
+
+state: 8	next type: INT		shift to state 13
+current situation: var_declarations INT | 
+
+state: 13	next type: ID		shift to state 49
+current situation: var_declarations INT ID | 
+
+state: 49	next type: SEMI		reduce by grammar 9: declaration->ID 
+current situation: var_declarations INT | declaration
+
+state: 13	next type: declaration		shift to state 50
+current situation: var_declarations INT declaration | 
+
+state: 50	next type: SEMI		reduce by grammar 6: declaration_list->declaration 
+current situation: var_declarations INT | declaration_list
+
+state: 13	next type: declaration_list		shift to state 51
+current situation: var_declarations INT declaration_list | 
+
+state: 51	next type: SEMI		shift to state 94
+current situation: var_declarations INT declaration_list SEMI | 
+
+state: 94	next type: ID		reduce by grammar 4: var_declaration->INT declaration_list SEMI 
+current situation: var_declarations | var_declaration
+
+state: 8	next type: var_declaration		shift to state 31
+current situation: var_declarations var_declaration | 
+
+state: 31	next type: ID		reduce by grammar 2: var_declarations->var_declarations var_declaration 
+current situation: | var_declarations
+
+state: 0	next type: var_declarations		shift to state 8
+current situation: var_declarations | 
+
+state: 8	next type: ID		shift to state 20
+current situation: var_declarations ID | 
+
+state: 20	next type: ASSIGN		shift to state 53
+current situation: var_declarations ID ASSIGN | 
+
+state: 53	next type: ID		shift to state 99
+current situation: var_declarations ID ASSIGN ID | 
+
+state: 99	next type: PLUS		reduce by grammar 35: exp->ID 
+current situation: var_declarations ID ASSIGN | exp
+
+state: 53	next type: exp		shift to state 101
+current situation: var_declarations ID ASSIGN exp | 
+
+state: 101	next type: PLUS		shift to state 163
+current situation: var_declarations ID ASSIGN exp PLUS | 
+
+state: 163	next type: ID		shift to state 99
+current situation: var_declarations ID ASSIGN exp PLUS ID | 
+
+state: 99	next type: MUL_OP		reduce by grammar 35: exp->ID 
+current situation: var_declarations ID ASSIGN exp PLUS | exp
+
+state: 163	next type: exp		shift to state 245
+current situation: var_declarations ID ASSIGN exp PLUS exp | 
+
+state: 245	next type: MUL_OP		shift to state 164
+current situation: var_declarations ID ASSIGN exp PLUS exp MUL_OP | 
+
+state: 164	next type: ID		shift to state 99
+current situation: var_declarations ID ASSIGN exp PLUS exp MUL_OP ID | 
+
+state: 99	next type: SHL_OP		reduce by grammar 35: exp->ID 
+current situation: var_declarations ID ASSIGN exp PLUS exp MUL_OP | exp
+
+state: 164	next type: exp		shift to state 246
+current situation: var_declarations ID ASSIGN exp PLUS exp MUL_OP exp | 
+
+state: 246	next type: SHL_OP		reduce by grammar 42: exp->exp MUL_OP exp 
+current situation: var_declarations ID ASSIGN exp PLUS | exp
+
+state: 163	next type: exp		shift to state 245
+current situation: var_declarations ID ASSIGN exp PLUS exp | 
+
+state: 245	next type: SHL_OP		reduce by grammar 40: exp->exp PLUS exp 
+current situation: var_declarations ID ASSIGN | exp
+
+state: 53	next type: exp		shift to state 101
+current situation: var_declarations ID ASSIGN exp | 
+
+state: 101	next type: SHL_OP		shift to state 170
+current situation: var_declarations ID ASSIGN exp SHL_OP | 
+
+state: 170	next type: INT_NUM		shift to state 100
+current situation: var_declarations ID ASSIGN exp SHL_OP INT_NUM | 
+
+state: 100	next type: SEMI		reduce by grammar 34: exp->INT_NUM 
+current situation: var_declarations ID ASSIGN exp SHL_OP | exp
+
+state: 170	next type: exp		shift to state 252
+current situation: var_declarations ID ASSIGN exp SHL_OP exp | 
+
+state: 252	next type: SEMI		reduce by grammar 50: exp->exp SHL_OP exp 
+current situation: var_declarations ID ASSIGN | exp
+
+state: 53	next type: exp		shift to state 101
+current situation: var_declarations ID ASSIGN exp | 
+
+state: 101	next type: SEMI		reduce by grammar 25: assign_statement->ID ASSIGN exp 
+current situation: var_declarations | assign_statement
+
+state: 8	next type: assign_statement		shift to state 10
+current situation: var_declarations assign_statement | 
+
+state: 10	next type: SEMI		shift to state 46
+current situation: var_declarations assign_statement SEMI | 
+
+state: 46	next type: IF		reduce by grammar 14: statement->assign_statement SEMI 
+current situation: var_declarations | statement
+
+state: 8	next type: statement		shift to state 17
+current situation: var_declarations statement | 
+
+state: 17	next type: IF		reduce by grammar 13: statements->statement 
+current situation: var_declarations | statements
+
+state: 8	next type: statements		shift to state 30
+current situation: var_declarations statements | 
+
+state: 30	next type: IF		shift to state 1
+current situation: var_declarations statements IF | 
+
+state: 1	next type: LPAR		shift to state 24
+current situation: var_declarations statements IF LPAR | 
+
+state: 24	next type: ID		shift to state 60
+current situation: var_declarations statements IF LPAR ID | 
+
+state: 60	next type: GT		reduce by grammar 35: exp->ID 
+current situation: var_declarations statements IF LPAR | exp
+
+state: 24	next type: exp		shift to state 62
+current situation: var_declarations statements IF LPAR exp | 
+
+state: 62	next type: GT		shift to state 127
+current situation: var_declarations statements IF LPAR exp GT | 
+
+state: 127	next type: ID		shift to state 60
+current situation: var_declarations statements IF LPAR exp GT ID | 
+
+state: 60	next type: RPAR		reduce by grammar 35: exp->ID 
+current situation: var_declarations statements IF LPAR exp GT | exp
+
+state: 127	next type: exp		shift to state 221
+current situation: var_declarations statements IF LPAR exp GT exp | 
+
+state: 221	next type: RPAR		reduce by grammar 45: exp->exp GT exp 
+current situation: var_declarations statements IF LPAR | exp
+
+state: 24	next type: exp		shift to state 62
+current situation: var_declarations statements IF LPAR exp | 
+
+state: 62	next type: RPAR		shift to state 116
+current situation: var_declarations statements IF LPAR exp RPAR | 
+
+state: 116	next type: LBRACE		shift to state 201
+current situation: var_declarations statements IF LPAR exp RPAR LBRACE | 
+
+state: 201	next type: WRITE		shift to state 2
+current situation: var_declarations statements IF LPAR exp RPAR LBRACE WRITE | 
+
+state: 2	next type: LPAR		shift to state 25
+current situation: var_declarations statements IF LPAR exp RPAR LBRACE WRITE LPAR | 
+
+state: 25	next type: LPAR		shift to state 58
+current situation: var_declarations statements IF LPAR exp RPAR LBRACE WRITE LPAR LPAR | 
+
+state: 58	next type: LPAR		shift to state 58
+current situation: var_declarations statements IF LPAR exp RPAR LBRACE WRITE LPAR LPAR LPAR | 
+
+state: 58	next type: ID		shift to state 60
+current situation: var_declarations statements IF LPAR exp RPAR LBRACE WRITE LPAR LPAR LPAR ID | 
+
+state: 60	next type: PLUS		reduce by grammar 35: exp->ID 
+current situation: var_declarations statements IF LPAR exp RPAR LBRACE WRITE LPAR LPAR LPAR | exp
+
+state: 58	next type: exp		shift to state 111
+current situation: var_declarations statements IF LPAR exp RPAR LBRACE WRITE LPAR LPAR LPAR exp | 
+
+state: 111	next type: PLUS		shift to state 124
+current situation: var_declarations statements IF LPAR exp RPAR LBRACE WRITE LPAR LPAR LPAR exp PLUS | 
+
+state: 124	next type: ID		shift to state 60
+current situation: var_declarations statements IF LPAR exp RPAR LBRACE WRITE LPAR LPAR LPAR exp PLUS ID | 
+
+state: 60	next type: RPAR		reduce by grammar 35: exp->ID 
+current situation: var_declarations statements IF LPAR exp RPAR LBRACE WRITE LPAR LPAR LPAR exp PLUS | exp
+
+state: 124	next type: exp		shift to state 218
+current situation: var_declarations statements IF LPAR exp RPAR LBRACE WRITE LPAR LPAR LPAR exp PLUS exp | 
+
+state: 218	next type: RPAR		reduce by grammar 40: exp->exp PLUS exp 
+current situation: var_declarations statements IF LPAR exp RPAR LBRACE WRITE LPAR LPAR LPAR | exp
+
+state: 58	next type: exp		shift to state 111
+current situation: var_declarations statements IF LPAR exp RPAR LBRACE WRITE LPAR LPAR LPAR exp | 
+
+state: 111	next type: RPAR		shift to state 194
+current situation: var_declarations statements IF LPAR exp RPAR LBRACE WRITE LPAR LPAR LPAR exp RPAR | 
+
+state: 194	next type: MUL_OP		reduce by grammar 54: exp->LPAR exp RPAR 
+current situation: var_declarations statements IF LPAR exp RPAR LBRACE WRITE LPAR LPAR | exp
+
+state: 58	next type: exp		shift to state 111
+current situation: var_declarations statements IF LPAR exp RPAR LBRACE WRITE LPAR LPAR exp | 
+
+state: 111	next type: MUL_OP		shift to state 125
+current situation: var_declarations statements IF LPAR exp RPAR LBRACE WRITE LPAR LPAR exp MUL_OP | 
+
+state: 125	next type: ID		shift to state 60
+current situation: var_declarations statements IF LPAR exp RPAR LBRACE WRITE LPAR LPAR exp MUL_OP ID | 
+
+state: 60	next type: RPAR		reduce by grammar 35: exp->ID 
+current situation: var_declarations statements IF LPAR exp RPAR LBRACE WRITE LPAR LPAR exp MUL_OP | exp
+
+state: 125	next type: exp		shift to state 219
+current situation: var_declarations statements IF LPAR exp RPAR LBRACE WRITE LPAR LPAR exp MUL_OP exp | 
+
+state: 219	next type: RPAR		reduce by grammar 42: exp->exp MUL_OP exp 
+current situation: var_declarations statements IF LPAR exp RPAR LBRACE WRITE LPAR LPAR | exp
+
+state: 58	next type: exp		shift to state 111
+current situation: var_declarations statements IF LPAR exp RPAR LBRACE WRITE LPAR LPAR exp | 
+
+state: 111	next type: RPAR		shift to state 194
+current situation: var_declarations statements IF LPAR exp RPAR LBRACE WRITE LPAR LPAR exp RPAR | 
+
+state: 194	next type: RPAR		reduce by grammar 54: exp->LPAR exp RPAR 
+current situation: var_declarations statements IF LPAR exp RPAR LBRACE WRITE LPAR | exp
+
+state: 25	next type: exp		shift to state 63
+current situation: var_declarations statements IF LPAR exp RPAR LBRACE WRITE LPAR exp | 
+
+state: 63	next type: RPAR		shift to state 131
+current situation: var_declarations statements IF LPAR exp RPAR LBRACE WRITE LPAR exp RPAR | 
+
+state: 131	next type: SEMI		reduce by grammar 33: write_statement->WRITE LPAR exp RPAR 
+current situation: var_declarations statements IF LPAR exp RPAR LBRACE | write_statement
+
+state: 201	next type: write_statement		shift to state 16
+current situation: var_declarations statements IF LPAR exp RPAR LBRACE write_statement | 
+
+state: 16	next type: SEMI		reduce by grammar 23: read_write_statement->write_statement 
+current situation: var_declarations statements IF LPAR exp RPAR LBRACE | read_write_statement
+
+state: 201	next type: read_write_statement		shift to state 79
+current situation: var_declarations statements IF LPAR exp RPAR LBRACE read_write_statement | 
+
+state: 79	next type: SEMI		shift to state 143
+current situation: var_declarations statements IF LPAR exp RPAR LBRACE read_write_statement SEMI | 
+
+state: 143	next type: RBRACE		reduce by grammar 16: statement->read_write_statement SEMI 
+current situation: var_declarations statements IF LPAR exp RPAR LBRACE | statement
+
+state: 201	next type: statement		shift to state 76
+current situation: var_declarations statements IF LPAR exp RPAR LBRACE statement | 
+
+state: 76	next type: RBRACE		reduce by grammar 13: statements->statement 
+current situation: var_declarations statements IF LPAR exp RPAR LBRACE | statements
+
+state: 201	next type: statements		shift to state 275
+current situation: var_declarations statements IF LPAR exp RPAR LBRACE statements | 
+
+state: 275	next type: RBRACE		shift to state 303
+current situation: var_declarations statements IF LPAR exp RPAR LBRACE statements RBRACE | 
+
+state: 303	next type: ELSE		reduce by grammar 11: code_block->LBRACE statements RBRACE 
+current situation: var_declarations statements IF LPAR exp RPAR | code_block
+
+state: 116	next type: code_block		shift to state 199
+current situation: var_declarations statements IF LPAR exp RPAR code_block | 
+
+state: 199	next type: ELSE		reduce by grammar 28: if_stmt->IF LPAR exp RPAR code_block 
+current situation: var_declarations statements | if_stmt
+
+state: 30	next type: if_stmt		shift to state 4
+current situation: var_declarations statements if_stmt | 
+
+state: 4	next type: ELSE		shift to state 27
+current situation: var_declarations statements if_stmt ELSE | 
+
+state: 27	next type: LBRACE		shift to state 67
+current situation: var_declarations statements if_stmt ELSE LBRACE | 
+
+state: 67	next type: WHILE		shift to state 81
+current situation: var_declarations statements if_stmt ELSE LBRACE WHILE | 
+
+state: 81	next type: LPAR		shift to state 144
+current situation: var_declarations statements if_stmt ELSE LBRACE WHILE LPAR | 
+
+state: 144	next type: ID		shift to state 60
+current situation: var_declarations statements if_stmt ELSE LBRACE WHILE LPAR ID | 
+
+state: 60	next type: NOTEQ		reduce by grammar 35: exp->ID 
+current situation: var_declarations statements if_stmt ELSE LBRACE WHILE LPAR | exp
+
+state: 144	next type: exp		shift to state 233
+current situation: var_declarations statements if_stmt ELSE LBRACE WHILE LPAR exp | 
+
+state: 233	next type: NOTEQ		shift to state 118
+current situation: var_declarations statements if_stmt ELSE LBRACE WHILE LPAR exp NOTEQ | 
+
+state: 118	next type: INT_NUM		shift to state 61
+current situation: var_declarations statements if_stmt ELSE LBRACE WHILE LPAR exp NOTEQ INT_NUM | 
+
+state: 61	next type: RPAR		reduce by grammar 34: exp->INT_NUM 
+current situation: var_declarations statements if_stmt ELSE LBRACE WHILE LPAR exp NOTEQ | exp
+
+state: 118	next type: exp		shift to state 212
+current situation: var_declarations statements if_stmt ELSE LBRACE WHILE LPAR exp NOTEQ exp | 
+
+state: 212	next type: RPAR		reduce by grammar 47: exp->exp NOTEQ exp 
+current situation: var_declarations statements if_stmt ELSE LBRACE WHILE LPAR | exp
+
+state: 144	next type: exp		shift to state 233
+current situation: var_declarations statements if_stmt ELSE LBRACE WHILE LPAR exp | 
+
+state: 233	next type: RPAR		shift to state 297
+current situation: var_declarations statements if_stmt ELSE LBRACE WHILE LPAR exp RPAR | 
+
+state: 297	next type: LBRACE		shift to state 232
+current situation: var_declarations statements if_stmt ELSE LBRACE WHILE LPAR exp RPAR LBRACE | 
+
+state: 232	next type: READ		shift to state 3
+current situation: var_declarations statements if_stmt ELSE LBRACE WHILE LPAR exp RPAR LBRACE READ | 
+
+state: 3	next type: LPAR		shift to state 26
+current situation: var_declarations statements if_stmt ELSE LBRACE WHILE LPAR exp RPAR LBRACE READ LPAR | 
+
+state: 26	next type: ID		shift to state 64
+current situation: var_declarations statements if_stmt ELSE LBRACE WHILE LPAR exp RPAR LBRACE READ LPAR ID | 
+
+state: 64	next type: RPAR		shift to state 132
+current situation: var_declarations statements if_stmt ELSE LBRACE WHILE LPAR exp RPAR LBRACE READ LPAR ID RPAR | 
+
+state: 132	next type: SEMI		reduce by grammar 32: read_statement->READ LPAR ID RPAR 
+current situation: var_declarations statements if_stmt ELSE LBRACE WHILE LPAR exp RPAR LBRACE | read_statement
+
+state: 232	next type: read_statement		shift to state 6
+current situation: var_declarations statements if_stmt ELSE LBRACE WHILE LPAR exp RPAR LBRACE read_statement | 
+
+state: 6	next type: SEMI		reduce by grammar 22: read_write_statement->read_statement 
+current situation: var_declarations statements if_stmt ELSE LBRACE WHILE LPAR exp RPAR LBRACE | read_write_statement
+
+state: 232	next type: read_write_statement		shift to state 79
+current situation: var_declarations statements if_stmt ELSE LBRACE WHILE LPAR exp RPAR LBRACE read_write_statement | 
+
+state: 79	next type: SEMI		shift to state 143
+current situation: var_declarations statements if_stmt ELSE LBRACE WHILE LPAR exp RPAR LBRACE read_write_statement SEMI | 
+
+state: 143	next type: RBRACE		reduce by grammar 16: statement->read_write_statement SEMI 
+current situation: var_declarations statements if_stmt ELSE LBRACE WHILE LPAR exp RPAR LBRACE | statement
+
+state: 232	next type: statement		shift to state 76
+current situation: var_declarations statements if_stmt ELSE LBRACE WHILE LPAR exp RPAR LBRACE statement | 
+
+state: 76	next type: RBRACE		reduce by grammar 13: statements->statement 
+current situation: var_declarations statements if_stmt ELSE LBRACE WHILE LPAR exp RPAR LBRACE | statements
+
+state: 232	next type: statements		shift to state 296
+current situation: var_declarations statements if_stmt ELSE LBRACE WHILE LPAR exp RPAR LBRACE statements | 
+
+state: 296	next type: RBRACE		shift to state 325
+current situation: var_declarations statements if_stmt ELSE LBRACE WHILE LPAR exp RPAR LBRACE statements RBRACE | 
+
+state: 325	next type: RBRACE		reduce by grammar 11: code_block->LBRACE statements RBRACE 
+current situation: var_declarations statements if_stmt ELSE LBRACE WHILE LPAR exp RPAR | code_block
+
+state: 297	next type: code_block		shift to state 326
+current situation: var_declarations statements if_stmt ELSE LBRACE WHILE LPAR exp RPAR code_block | 
+
+state: 326	next type: RBRACE		reduce by grammar 29: while_statement->WHILE LPAR exp RPAR code_block 
+current situation: var_declarations statements if_stmt ELSE LBRACE | while_statement
+
+state: 67	next type: while_statement		shift to state 84
+current situation: var_declarations statements if_stmt ELSE LBRACE while_statement | 
+
+state: 84	next type: RBRACE		reduce by grammar 19: control_statement->while_statement 
+current situation: var_declarations statements if_stmt ELSE LBRACE | control_statement
+
+state: 67	next type: control_statement		shift to state 80
+current situation: var_declarations statements if_stmt ELSE LBRACE control_statement | 
+
+state: 80	next type: RBRACE		reduce by grammar 15: statement->control_statement 
+current situation: var_declarations statements if_stmt ELSE LBRACE | statement
+
+state: 67	next type: statement		shift to state 76
+current situation: var_declarations statements if_stmt ELSE LBRACE statement | 
+
+state: 76	next type: RBRACE		reduce by grammar 13: statements->statement 
+current situation: var_declarations statements if_stmt ELSE LBRACE | statements
+
+state: 67	next type: statements		shift to state 133
+current situation: var_declarations statements if_stmt ELSE LBRACE statements | 
+
+state: 133	next type: RBRACE		shift to state 225
+current situation: var_declarations statements if_stmt ELSE LBRACE statements RBRACE | 
+
+state: 225	next type: DO		reduce by grammar 11: code_block->LBRACE statements RBRACE 
+current situation: var_declarations statements if_stmt ELSE | code_block
+
+state: 27	next type: code_block		shift to state 65
+current situation: var_declarations statements if_stmt ELSE code_block | 
+
+state: 65	next type: DO		reduce by grammar 27: if_statement->if_stmt ELSE code_block 
+current situation: var_declarations statements | if_statement
+
+state: 30	next type: if_statement		shift to state 21
+current situation: var_declarations statements if_statement | 
+
+state: 21	next type: DO		reduce by grammar 18: control_statement->if_statement 
+current situation: var_declarations statements | control_statement
+
+state: 30	next type: control_statement		shift to state 19
+current situation: var_declarations statements control_statement | 
+
+state: 19	next type: DO		reduce by grammar 15: statement->control_statement 
+current situation: var_declarations statements | statement
+
+state: 30	next type: statement		shift to state 48
+current situation: var_declarations statements statement | 
+
+state: 48	next type: DO		reduce by grammar 12: statements->statements statement 
+current situation: var_declarations | statements
+
+state: 8	next type: statements		shift to state 30
+current situation: var_declarations statements | 
+
+state: 30	next type: DO		shift to state 9
+current situation: var_declarations statements DO | 
+
+state: 9	next type: LBRACE		shift to state 36
+current situation: var_declarations statements DO LBRACE | 
+
+state: 36	next type: ID		shift to state 20
+current situation: var_declarations statements DO LBRACE ID | 
+
+state: 20	next type: ASSIGN		shift to state 53
+current situation: var_declarations statements DO LBRACE ID ASSIGN | 
+
+state: 53	next type: ID		shift to state 99
+current situation: var_declarations statements DO LBRACE ID ASSIGN ID | 
+
+state: 99	next type: PLUS		reduce by grammar 35: exp->ID 
+current situation: var_declarations statements DO LBRACE ID ASSIGN | exp
+
+state: 53	next type: exp		shift to state 101
+current situation: var_declarations statements DO LBRACE ID ASSIGN exp | 
+
+state: 101	next type: PLUS		shift to state 163
+current situation: var_declarations statements DO LBRACE ID ASSIGN exp PLUS | 
+
+state: 163	next type: INT_NUM		shift to state 100
+current situation: var_declarations statements DO LBRACE ID ASSIGN exp PLUS INT_NUM | 
+
+state: 100	next type: SEMI		reduce by grammar 34: exp->INT_NUM 
+current situation: var_declarations statements DO LBRACE ID ASSIGN exp PLUS | exp
+
+state: 163	next type: exp		shift to state 245
+current situation: var_declarations statements DO LBRACE ID ASSIGN exp PLUS exp | 
+
+state: 245	next type: SEMI		reduce by grammar 40: exp->exp PLUS exp 
+current situation: var_declarations statements DO LBRACE ID ASSIGN | exp
+
+state: 53	next type: exp		shift to state 101
+current situation: var_declarations statements DO LBRACE ID ASSIGN exp | 
+
+state: 101	next type: SEMI		reduce by grammar 25: assign_statement->ID ASSIGN exp 
+current situation: var_declarations statements DO LBRACE | assign_statement
+
+state: 36	next type: assign_statement		shift to state 77
+current situation: var_declarations statements DO LBRACE assign_statement | 
+
+state: 77	next type: SEMI		shift to state 142
+current situation: var_declarations statements DO LBRACE assign_statement SEMI | 
+
+state: 142	next type: ID		reduce by grammar 14: statement->assign_statement SEMI 
+current situation: var_declarations statements DO LBRACE | statement
+
+state: 36	next type: statement		shift to state 76
+current situation: var_declarations statements DO LBRACE statement | 
+
+state: 76	next type: ID		reduce by grammar 13: statements->statement 
+current situation: var_declarations statements DO LBRACE | statements
+
+state: 36	next type: statements		shift to state 75
+current situation: var_declarations statements DO LBRACE statements | 
+
+state: 75	next type: ID		shift to state 20
+current situation: var_declarations statements DO LBRACE statements ID | 
+
+state: 20	next type: ASSIGN		shift to state 53
+current situation: var_declarations statements DO LBRACE statements ID ASSIGN | 
+
+state: 53	next type: ID		shift to state 99
+current situation: var_declarations statements DO LBRACE statements ID ASSIGN ID | 
+
+state: 99	next type: MINUS		reduce by grammar 35: exp->ID 
+current situation: var_declarations statements DO LBRACE statements ID ASSIGN | exp
+
+state: 53	next type: exp		shift to state 101
+current situation: var_declarations statements DO LBRACE statements ID ASSIGN exp | 
+
+state: 101	next type: MINUS		shift to state 162
+current situation: var_declarations statements DO LBRACE statements ID ASSIGN exp MINUS | 
+
+state: 162	next type: INT_NUM		shift to state 100
+current situation: var_declarations statements DO LBRACE statements ID ASSIGN exp MINUS INT_NUM | 
+
+state: 100	next type: SEMI		reduce by grammar 34: exp->INT_NUM 
+current situation: var_declarations statements DO LBRACE statements ID ASSIGN exp MINUS | exp
+
+state: 162	next type: exp		shift to state 244
+current situation: var_declarations statements DO LBRACE statements ID ASSIGN exp MINUS exp | 
+
+state: 244	next type: SEMI		reduce by grammar 41: exp->exp MINUS exp 
+current situation: var_declarations statements DO LBRACE statements ID ASSIGN | exp
+
+state: 53	next type: exp		shift to state 101
+current situation: var_declarations statements DO LBRACE statements ID ASSIGN exp | 
+
+state: 101	next type: SEMI		reduce by grammar 25: assign_statement->ID ASSIGN exp 
+current situation: var_declarations statements DO LBRACE statements | assign_statement
+
+state: 75	next type: assign_statement		shift to state 77
+current situation: var_declarations statements DO LBRACE statements assign_statement | 
+
+state: 77	next type: SEMI		shift to state 142
+current situation: var_declarations statements DO LBRACE statements assign_statement SEMI | 
+
+state: 142	next type: RBRACE		reduce by grammar 14: statement->assign_statement SEMI 
+current situation: var_declarations statements DO LBRACE statements | statement
+
+state: 75	next type: statement		shift to state 141
+current situation: var_declarations statements DO LBRACE statements statement | 
+
+state: 141	next type: RBRACE		reduce by grammar 12: statements->statements statement 
+current situation: var_declarations statements DO LBRACE | statements
+
+state: 36	next type: statements		shift to state 75
+current situation: var_declarations statements DO LBRACE statements | 
+
+state: 75	next type: RBRACE		shift to state 140
+current situation: var_declarations statements DO LBRACE statements RBRACE | 
+
+state: 140	next type: WHILE		reduce by grammar 11: code_block->LBRACE statements RBRACE 
+current situation: var_declarations statements DO | code_block
+
+state: 9	next type: code_block		shift to state 34
+current situation: var_declarations statements DO code_block | 
+
+state: 34	next type: WHILE		shift to state 72
+current situation: var_declarations statements DO code_block WHILE | 
+
+state: 72	next type: LPAR		shift to state 137
+current situation: var_declarations statements DO code_block WHILE LPAR | 
+
+state: 137	next type: ID		shift to state 60
+current situation: var_declarations statements DO code_block WHILE LPAR ID | 
+
+state: 60	next type: LTEQ		reduce by grammar 35: exp->ID 
+current situation: var_declarations statements DO code_block WHILE LPAR | exp
+
+state: 137	next type: exp		shift to state 228
+current situation: var_declarations statements DO code_block WHILE LPAR exp | 
+
+state: 228	next type: LTEQ		shift to state 129
+current situation: var_declarations statements DO code_block WHILE LPAR exp LTEQ | 
+
+state: 129	next type: ID		shift to state 60
+current situation: var_declarations statements DO code_block WHILE LPAR exp LTEQ ID | 
+
+state: 60	next type: RPAR		reduce by grammar 35: exp->ID 
+current situation: var_declarations statements DO code_block WHILE LPAR exp LTEQ | exp
+
+state: 129	next type: exp		shift to state 223
+current situation: var_declarations statements DO code_block WHILE LPAR exp LTEQ exp | 
+
+state: 223	next type: RPAR		reduce by grammar 48: exp->exp LTEQ exp 
+current situation: var_declarations statements DO code_block WHILE LPAR | exp
+
+state: 137	next type: exp		shift to state 228
+current situation: var_declarations statements DO code_block WHILE LPAR exp | 
+
+state: 228	next type: RPAR		shift to state 294
+current situation: var_declarations statements DO code_block WHILE LPAR exp RPAR | 
+
+state: 294	next type: SEMI		reduce by grammar 30: do_while_statement->DO code_block WHILE LPAR exp RPAR 
+current situation: var_declarations statements | do_while_statement
+
+state: 30	next type: do_while_statement		shift to state 22
+current situation: var_declarations statements do_while_statement | 
+
+state: 22	next type: SEMI		shift to state 55
+current situation: var_declarations statements do_while_statement SEMI | 
+
+state: 55	next type: RETURN		reduce by grammar 20: control_statement->do_while_statement SEMI 
+current situation: var_declarations statements | control_statement
+
+state: 30	next type: control_statement		shift to state 19
+current situation: var_declarations statements control_statement | 
+
+state: 19	next type: RETURN		reduce by grammar 15: statement->control_statement 
+current situation: var_declarations statements | statement
+
+state: 30	next type: statement		shift to state 48
+current situation: var_declarations statements statement | 
+
+state: 48	next type: RETURN		reduce by grammar 12: statements->statements statement 
+current situation: var_declarations | statements
+
+state: 8	next type: statements		shift to state 30
+current situation: var_declarations statements | 
+
+state: 30	next type: RETURN		shift to state 15
+current situation: var_declarations statements RETURN | 
+
+state: 15	next type: SEMI		reduce by grammar 31: return_statement->RETURN 
+current situation: var_declarations statements | return_statement
+
+state: 30	next type: return_statement		shift to state 7
+current situation: var_declarations statements return_statement | 
+
+state: 7	next type: SEMI		shift to state 29
+current situation: var_declarations statements return_statement SEMI | 
+
+state: 29	next type: EOF		reduce by grammar 21: control_statement->return_statement SEMI 
+current situation: var_declarations statements | control_statement
+
+state: 30	next type: control_statement		shift to state 19
+current situation: var_declarations statements control_statement | 
+
+state: 19	next type: EOF		reduce by grammar 15: statement->control_statement 
+current situation: var_declarations statements | statement
+
+state: 30	next type: statement		shift to state 48
+current situation: var_declarations statements statement | 
+
+state: 48	next type: EOF		reduce by grammar 12: statements->statements statement 
+current situation: var_declarations | statements
+
+state: 8	next type: statements		shift to state 30
+current situation: var_declarations statements | 
+
+state: 30	next type: EOF		shift to state 69
+current situation: var_declarations statements EOF | 
+
+Accept!

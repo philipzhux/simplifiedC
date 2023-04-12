@@ -1,9 +1,0 @@
-# this is a .gitignore file
-# ignore .vscode directory and its contents
-.vscode/*
-# ignore test.dSYM directory and its contents
-test.dSYM/*
-# ignore test executable
-test
-
-

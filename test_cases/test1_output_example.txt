@@ -1,0 +1,158 @@
+Scanned Tokens:
+INT ID SEMI INT ID SEMI ID ASSIGN ID PLUS INT_NUM SEMI RETURN SEMI EOF 
+
+Parsing Process:
+state: 0	next type: INT		shift to state 13
+current situation: INT | 
+
+state: 13	next type: ID		shift to state 49
+current situation: INT ID | 
+
+state: 49	next type: SEMI		reduce by grammar 9: declaration->ID 
+current situation: INT | declaration
+
+state: 13	next type: declaration		shift to state 50
+current situation: INT declaration | 
+
+state: 50	next type: SEMI		reduce by grammar 6: declaration_list->declaration 
+current situation: INT | declaration_list
+
+state: 13	next type: declaration_list		shift to state 51
+current situation: INT declaration_list | 
+
+state: 51	next type: SEMI		shift to state 94
+current situation: INT declaration_list SEMI | 
+
+state: 94	next type: INT		reduce by grammar 4: var_declaration->INT declaration_list SEMI 
+current situation: | var_declaration
+
+state: 0	next type: var_declaration		shift to state 14
+current situation: var_declaration | 
+
+state: 14	next type: INT		reduce by grammar 3: var_declarations->var_declaration 
+current situation: | var_declarations
+
+state: 0	next type: var_declarations		shift to state 8
+current situation: var_declarations | 
+
+state: 8	next type: INT		shift to state 13
+current situation: var_declarations INT | 
+
+state: 13	next type: ID		shift to state 49
+current situation: var_declarations INT ID | 
+
+state: 49	next type: SEMI		reduce by grammar 9: declaration->ID 
+current situation: var_declarations INT | declaration
+
+state: 13	next type: declaration		shift to state 50
+current situation: var_declarations INT declaration | 
+
+state: 50	next type: SEMI		reduce by grammar 6: declaration_list->declaration 
+current situation: var_declarations INT | declaration_list
+
+state: 13	next type: declaration_list		shift to state 51
+current situation: var_declarations INT declaration_list | 
+
+state: 51	next type: SEMI		shift to state 94
+current situation: var_declarations INT declaration_list SEMI | 
+
+state: 94	next type: ID		reduce by grammar 4: var_declaration->INT declaration_list SEMI 
+current situation: var_declarations | var_declaration
+
+state: 8	next type: var_declaration		shift to state 31
+current situation: var_declarations var_declaration | 
+
+state: 31	next type: ID		reduce by grammar 2: var_declarations->var_declarations var_declaration 
+current situation: | var_declarations
+
+state: 0	next type: var_declarations		shift to state 8
+current situation: var_declarations | 
+
+state: 8	next type: ID		shift to state 20
+current situation: var_declarations ID | 
+
+state: 20	next type: ASSIGN		shift to state 53
+current situation: var_declarations ID ASSIGN | 
+
+state: 53	next type: ID		shift to state 99
+current situation: var_declarations ID ASSIGN ID | 
+
+state: 99	next type: PLUS		reduce by grammar 35: exp->ID 
+current situation: var_declarations ID ASSIGN | exp
+
+state: 53	next type: exp		shift to state 101
+current situation: var_declarations ID ASSIGN exp | 
+
+state: 101	next type: PLUS		shift to state 163
+current situation: var_declarations ID ASSIGN exp PLUS | 
+
+state: 163	next type: INT_NUM		shift to state 100
+current situation: var_declarations ID ASSIGN exp PLUS INT_NUM | 
+
+state: 100	next type: SEMI		reduce by grammar 34: exp->INT_NUM 
+current situation: var_declarations ID ASSIGN exp PLUS | exp
+
+state: 163	next type: exp		shift to state 245
+current situation: var_declarations ID ASSIGN exp PLUS exp | 
+
+state: 245	next type: SEMI		reduce by grammar 40: exp->exp PLUS exp 
+current situation: var_declarations ID ASSIGN | exp
+
+state: 53	next type: exp		shift to state 101
+current situation: var_declarations ID ASSIGN exp | 
+
+state: 101	next type: SEMI		reduce by grammar 25: assign_statement->ID ASSIGN exp 
+current situation: var_declarations | assign_statement
+
+state: 8	next type: assign_statement		shift to state 10
+current situation: var_declarations assign_statement | 
+
+state: 10	next type: SEMI		shift to state 46
+current situation: var_declarations assign_statement SEMI | 
+
+state: 46	next type: RETURN		reduce by grammar 14: statement->assign_statement SEMI 
+current situation: var_declarations | statement
+
+state: 8	next type: statement		shift to state 17
+current situation: var_declarations statement | 
+
+state: 17	next type: RETURN		reduce by grammar 13: statements->statement 
+current situation: var_declarations | statements
+
+state: 8	next type: statements		shift to state 30
+current situation: var_declarations statements | 
+
+state: 30	next type: RETURN		shift to state 15
+current situation: var_declarations statements RETURN | 
+
+state: 15	next type: SEMI		reduce by grammar 31: return_statement->RETURN 
+current situation: var_declarations statements | return_statement
+
+state: 30	next type: return_statement		shift to state 7
+current situation: var_declarations statements return_statement | 
+
+state: 7	next type: SEMI		shift to state 29
+current situation: var_declarations statements return_statement SEMI | 
+
+state: 29	next type: EOF		reduce by grammar 21: control_statement->return_statement SEMI 
+current situation: var_declarations statements | control_statement
+
+state: 30	next type: control_statement		shift to state 19
+current situation: var_declarations statements control_statement | 
+
+state: 19	next type: EOF		reduce by grammar 15: statement->control_statement 
+current situation: var_declarations statements | statement
+
+state: 30	next type: statement		shift to state 48
+current situation: var_declarations statements statement | 
+
+state: 48	next type: EOF		reduce by grammar 12: statements->statements statement 
+current situation: var_declarations | statements
+
+state: 8	next type: statements		shift to state 30
+current situation: var_declarations statements | 
+
+state: 30	next type: EOF		shift to state 69
+current situation: var_declarations statements EOF | 
+
+Accept!
