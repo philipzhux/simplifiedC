@@ -23,7 +23,7 @@ public:
     Configuration(std::shared_ptr<Production> production, int dotPosition, std::unordered_set<Symbol> lookaheads);
     std::shared_ptr<Production> production;
     int dotPosition;
-     std::unordered_set<Symbol> lookaheads;
+    std::unordered_set<Symbol> lookaheads;
     std::pair<Symbol, Configuration> getTransition() const;
     bool operator==(const Configuration &other) const;
     bool isComplete() const;
@@ -50,10 +50,13 @@ namespace std
         size_t operator()(const Configuration &configuration) const
         {
             size_t res = 17;
-            res = res * 31 + hash<int>()(configuration.production->id);
-            res = res * 31 + hash<int>()(configuration.dotPosition);
+            res = res * 31 + hash<int>{}(configuration.production->id);
+            res = res * 31 + hash<int>{}(configuration.dotPosition);
+            size_t lookaheadsHash = 0;
             for(const auto& lookahead : configuration.lookaheads)
-                res = res * 31 + hash<int>()(lookahead.id);
+                lookaheadsHash += hash<int>{}(lookahead.id);
+                // res = res * 31 + hash<int>()(lookahead.id);
+            res = res * 31 + lookaheadsHash;
             return res;
         }
     };

@@ -184,7 +184,7 @@ void grammar::buildGrammar(std::string path)
     parser.addProduction(_exp9, {_lpar, _exp, _rpar});
     std::cout << "Building parser..." << std::endl;
     parser.build();
-    std::cout << "Parser built successfully, internal state exported to " << path << std::endl;
+    std::cout << "Parser built successfully("<<parser.configurationSets.size()<<"), internal state exported to " << path << std::endl;
     std::ofstream file(path);
     cereal::XMLOutputArchive archive(file);
     archive(CEREAL_NVP(parser), CEREAL_NVP(tokenToTerminal));
