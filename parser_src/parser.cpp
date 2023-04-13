@@ -18,28 +18,28 @@ Parser::Parser(Symbol startLhs, std::vector<Symbol> startRhs, Terminal endSymbol
 std::vector<Configuration> Parser::getClosure(const Configuration &initConfiguration)
 {
     std::vector<Configuration> closure;
-    bool added_config = true;
-    bool modified_config = true;
-    size_t i = 0;
-    size_t modified_point = 0;
+    bool configAdded = true;
+    bool configModified = true;
+    size_t startExpandIdx = 0;
+    size_t modifiedPoint = 0;
     closure.push_back(initConfiguration);
-    while (added_config||modified_config) // keep expanding until no new configuration is added or modified
+    while (configAdded||configModified) // keep expanding until no new configuration is added or modified
     {
         // by default, start from newly added configurations
         // if the closure is modified, then start from the modified point
-        if (modified_config && i > modified_point) i = modified_point;
+        if (configModified && startExpandIdx > modifiedPoint) startExpandIdx = modifiedPoint;
         size_t size = closure.size();
-        added_config = false;
-        modified_config = false;
-        modified_point = size;
+        configAdded = false;
+        configModified = false;
+        modifiedPoint = size;
        
-        for (; i < size; i++)
+        for (; startExpandIdx < size; startExpandIdx++)
         {
-            if (closure[i].isComplete())
+            if (closure[startExpandIdx].isComplete())
             {
                 continue;
             }
-            Symbol symbolAfterDot = closure[i].getSymbolAfterDot();
+            Symbol symbolAfterDot = closure[startExpandIdx].getSymbolAfterDot();
             if (!symbolAfterDot.isTerminal)
             {
                 for (const auto &production : productions)
@@ -48,15 +48,15 @@ std::vector<Configuration> Parser::getClosure(const Configuration &initConfigura
                     {
                         // found a production with same lhs, insert it into the closure
                         // expanding symbolAfterDot
-                        for (const auto &configLookahead : closure[i].lookaheads)
+                        for (const auto &configLookahead : closure[startExpandIdx].lookaheads)
                         {
                             // calculate the lookahead for the new configuration
                             std::vector<Symbol> followSymbols;
 
                             // the symbols after the expanded symbol, needed to construct the lookahead
-                            for (int rhsIdx = closure[i].dotPosition + 1; rhsIdx < int(closure[i].production->rhs.size()); rhsIdx++)
+                            for (int rhsIdx = closure[startExpandIdx].dotPosition + 1; rhsIdx < int(closure[startExpandIdx].production->rhs.size()); rhsIdx++)
                             {
-                                followSymbols.push_back(closure[i].production->rhs[rhsIdx]);
+                                followSymbols.push_back(closure[startExpandIdx].production->rhs[rhsIdx]);
                             }
                             followSymbols.push_back(configLookahead);
 
@@ -66,25 +66,26 @@ std::vector<Configuration> Parser::getClosure(const Configuration &initConfigura
                                 // flag to indicate whether the new configuration is already in the closure
                                 // after the loop, if it is still true, then the new configuration is not in the closure
                                 bool needInsert = true;
-                                for (size_t j = 0; j < closure.size(); j++)
+                                // should rename j to something meaningful like compareConfigIdx
+                                for (size_t compareConfigIdx = 0; compareConfigIdx < closure.size(); compareConfigIdx++)
                                 {
-                                    if (*closure[j].production == *production && closure[j].dotPosition == 0)
+                                    if (*closure[compareConfigIdx].production == *production && closure[compareConfigIdx].dotPosition == 0)
                                     {
                                         // found a configuration with same production and dot position
                                         // may either add the lookahead to the existing configuration, or ignore it
                                         // if the lookahead is already in the existing configuration
                                         needInsert = false;
-                                        if (closure[j].lookaheads.count(lookahead) == 0)
+                                        if (closure[compareConfigIdx].lookaheads.count(lookahead) == 0)
                                         {
                                             // found a configuration with same production and dot position, but different lookahead
                                             // merge the lookaheads
-                                            closure[j].lookaheads.insert(lookahead);
-                                            if(j<size) {
+                                            closure[compareConfigIdx].lookaheads.insert(lookahead);
+                                            if(compareConfigIdx<size) {
                                                 // if the configuration is newly added, it is not counted as modified
                                                 // otherwise, it is modified
-                                                modified_config = true;
+                                                configModified = true;
                                                 // move the modified point to the leftmost modified configuration
-                                                if(j<modified_point) modified_point = j;
+                                                if(compareConfigIdx<modifiedPoint) modifiedPoint = compareConfigIdx;
                                             }
                                         }
 
@@ -97,7 +98,7 @@ std::vector<Configuration> Parser::getClosure(const Configuration &initConfigura
                                 {
                                     // insert the new configuration
                                     closure.push_back({production, 0, {lookahead}});
-                                    added_config = true;
+                                    configAdded = true;
                                 }
                             }
                         }
@@ -118,16 +119,20 @@ void Parser::build()
     std::vector<Configuration> initialClosure = getClosure(initialConfig);
     ConfigurationSet initialConfigurationSet = ConfigurationSet({initialClosure.begin(), initialClosure.end()}, ConfigurationSet::getId());
     configurationSets.push_back(initialConfigurationSet);
-    size_t i = 0;
+    // configurationSetIdx is the index of the configuration set that is currently being evaluated
+    // by moving the dot and take the closure on each of the configurations in the configuration set
+    // new configuration sets are created and added to the end of the configurationSets vector
+    // each configuration set is evaluated only once
+    size_t configurationSetIdx = 0;
     while (true)
     {
         bool changed = false;
         size_t size = configurationSets.size();
-        for (; i < size; i++)
+        for (; configurationSetIdx < size; configurationSetIdx++)
         {
             // auto configurationSet = configurationSets[i];
             std::unordered_map<Symbol, std::unordered_set<Configuration>> transitionMap;
-            for (const auto &configuration : configurationSets[i].configurations)
+            for (const auto &configuration : configurationSets[configurationSetIdx].configurations)
             {
                 if (configuration.isComplete())
                 {
@@ -135,6 +140,8 @@ void Parser::build()
                 }
                 std::pair<Symbol, Configuration> transition = configuration.getTransition();
                 std::vector<Configuration> closure = getClosure(transition.second);
+                // transitions are grouped by incoming token (symbol after the dot)
+                // with same incoming token, the transition is to the same configuration set
                 transitionMap[transition.first].insert(closure.begin(), closure.end());
             }
             for (const auto &transition : transitionMap)
@@ -144,9 +151,6 @@ void Parser::build()
                 if (found == configurationSets.end())
                 {
                     configurationSets.push_back(newConfigurationSet);
-                    // std::cout<<"new configuration set: "<<newConfigurationSet.id<<" rep ="<< repCount << std::endl;
-                    // printConfigurationSet(newConfigurationSet);
-                    // changed = true;
                 }
                 else
                 {
@@ -154,38 +158,37 @@ void Parser::build()
                     ConfigurationSet::rollbackId();
                     repCount++;
                 }
-                std::unordered_map<std::pair<int, int>, int> &targetTable = transition.first.isTerminal ? actionTable : gotoTable;
-                // printActionTable();
-                // printGotoTable();
-                if (targetTable.count(std::make_pair(configurationSets[i].id, transition.first.id)) == 0)
+                // if the incoming token is a non-terminal, the new state should be placed in the goto table
+                std::unordered_map<std::pair<int, int>, int> &table = transition.first.isTerminal ? actionTable : gotoTable;
+                if (table.count(std::make_pair(configurationSets[configurationSetIdx].id, transition.first.id)) == 0)
                 {
                     changed = true;
-                    targetTable[std::make_pair(configurationSets[i].id, transition.first.id)] = newConfigurationSet.id;
+                    table[std::make_pair(configurationSets[configurationSetIdx].id, transition.first.id)] = newConfigurationSet.id;
                 }
                 else
                 {
-                    if (targetTable[std::make_pair(configurationSets[i].id, transition.first.id)] != newConfigurationSet.id)
+                    if (table[std::make_pair(configurationSets[configurationSetIdx].id, transition.first.id)] != newConfigurationSet.id)
                     {
                         if (transition.first.isTerminal)
                         {
                             std::cout << "Error: conflict in action table" << std::endl;
-                            std::cout << "State: " << configurationSets[i].id << std::endl;
+                            std::cout << "State: " << configurationSets[configurationSetIdx].id << std::endl;
                             std::cout << "Symbol: " << transition.first.humanReadableName << std::endl;
-                            std::cout << "Existing action: " << targetTable[std::make_pair(configurationSets[i].id, transition.first.id)] << std::endl;
+                            std::cout << "Existing action: " << table[std::make_pair(configurationSets[configurationSetIdx].id, transition.first.id)] << std::endl;
                             std::cout << "New action: " << newConfigurationSet.id << std::endl;
                         }
                         else
                         {
                             std::cout << "Error: conflict in goto table" << std::endl;
-                            std::cout << "State: " << configurationSets[i].id << std::endl;
+                            std::cout << "State: " << configurationSets[configurationSetIdx].id << std::endl;
                             std::cout << "Symbol: " << transition.first.humanReadableName << std::endl;
-                            std::cout << "Existing goto: " << targetTable[std::make_pair(configurationSets[i].id, transition.first.id)] << std::endl;
+                            std::cout << "Existing goto: " << table[std::make_pair(configurationSets[configurationSetIdx].id, transition.first.id)] << std::endl;
                             std::cout << "New goto: " << newConfigurationSet.id << std::endl;
                         }
 
-                        printConfigurationSets();
-                        printActionTable();
-                        printGotoTable();
+                        // printConfigurationSets();
+                        // printActionTable();
+                        // printGotoTable();
                         exit(1);
                     }
                 }
@@ -218,11 +221,27 @@ void Parser::build()
                                 std::cout << symbol.humanReadableName << " ";
                             }
                             std::cout << std::endl << std::endl;
+
+                            // we tolerate the shift/reduce conflict by using shift by default
+                            // this solves the problem of dangling else in C such that else is
+                            // always associated with the nearest if.
                             tolerate = true;
                         }
                         else
                         {
-                            std::cout << "Error: reduce/reduce conflict" << std::endl;
+                            std::cout << "[Error] reduce/reduce conflict" << std::endl;
+                            std::cout << "Existing Reduce by: " << productions[-actionTable[std::make_pair(configurationSet.id, configLookahead.id)]]->lhs.humanReadableName << " -> ";
+                            for (const auto &symbol : productions[-actionTable[std::make_pair(configurationSet.id, configLookahead.id)]]->rhs)
+                            {
+                                std::cout << symbol.humanReadableName << " ";
+                            }
+                            std::cout << std::endl;
+                            std::cout << "Incoming Reduce by: " << configuration.production->lhs.humanReadableName << " -> ";
+                            for (const auto &symbol : configuration.production->rhs)
+                            {
+                                std::cout << symbol.humanReadableName << " ";
+                            }
+                            std::cout << std::endl;
                         }
 
                         if (!tolerate)
@@ -284,7 +303,6 @@ bool Parser::parse(std::vector<Symbol> input)
         else if (nextState < 0)
         {
             int production = -nextState;
-            // print reduce message
 
             // pop series of states from the stack according to the rhs of the production
             for (size_t j = 0; j < productions[production]->rhs.size(); j++)
@@ -387,22 +405,24 @@ std::unordered_set<Symbol> Parser::getFirstSet(Symbol symbol)
     {
         if (production->lhs == symbol)
         {
-            for (size_t i = 0; i < production->rhs.size(); i++)
+            for (size_t rhsCursor = 0; rhsCursor < production->rhs.size(); rhsCursor++)
             {
-                if (production->rhs[i].isTerminal)
+                if (production->rhs[rhsCursor].isTerminal)
                 {
                     firstSet.insert(production->rhs[0]);
                 }
                 else
                 {
-                    if (firstSetRecursionMemo.count(production->rhs[i]) == 0)
+                    if (firstSetRecursionMemo.count(production->rhs[rhsCursor]) == 0)
                     {
-                        std::unordered_set<Symbol> firstSetOfRhs = getFirstSet(production->rhs[i]);
+                        std::unordered_set<Symbol> firstSetOfRhs = getFirstSet(production->rhs[rhsCursor]);
                         firstSet.insert(firstSetOfRhs.begin(), firstSetOfRhs.end());
                     }
                 }
-                if (nullableSymbols.count(production->rhs[i].id) == 0)
+                if (nullableSymbols.count(production->rhs[rhsCursor].id) == 0)
                 {
+                    // only need to continue to get first set on
+                    // the next symbol when the current symbol is nullable
                     break;
                 }
             }
@@ -426,6 +446,8 @@ std::unordered_set<Symbol> Parser::getFirstSet(const std::vector<Symbol> &symbol
         firstSet.insert(firstSetOfSymbol.begin(), firstSetOfSymbol.end());
         if (nullableSymbols.count(symbol.id) == 0)
         {
+            // if the current symbol is nullable
+            // then we need to continue to get the first set of the next symbol
             break;
         }
     }
