@@ -38,6 +38,13 @@ NFA::NFA(std::string reservedWord, Token token): NFA()
 
 NFA::NFA(std::string anonymousChars): NFA()
 {  
+    // anonymousChars is a series of characters ORed together
+    // construct a NFA for temporary use only, it is not a token
+
+    // ATTENTION not a series of characters concatenated together
+    // for concatentated string, a corresponding token should be given
+    // the overloaded constructor above is for that purpose
+
     endState = NFA::makeNewState();
     for (size_t i = 0; i < anonymousChars.size(); i++)
     {

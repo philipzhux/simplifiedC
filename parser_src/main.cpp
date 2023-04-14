@@ -42,7 +42,8 @@ int main(int argc, char **argv)
             Scanner lex(src);
             if (!lex.compile())
             {
-                std::cout << "Syntax Error" << std::endl;
+                std::cout << "Scanner Syntax Error" << std::endl;
+                exit(1);
             }
 
             
