@@ -1,4 +1,4 @@
-# CUHK Compiler Course Project: C to MIPS Compiler
+# Simplified-C Compiler for MIPS
 
 This repository contains a C to MIPS compiler developed as a course project for the compiler course `CSC4180` at CUHK. The compiler translates a subset of the C language into MIPS assembly code, focusing on basic arithmetic, logical operations, control structures, and array operations.
 
