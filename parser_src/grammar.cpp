@@ -2,7 +2,7 @@
 #include "ast/code.hpp"
 #include <stdexcept>
 
-Parser grammar::buildGrammar()
+void parserWrapper::buildGrammar()
 {
     Terminal _$("$", $, Symbol::getId());
     Terminal _int("INT", INT, Symbol::getId());
@@ -43,7 +43,7 @@ Parser grammar::buildGrammar()
     Terminal _rpar("RPAR", RPAR, Symbol::getId());
 
     // mapping between token type and terminal symbol
-    std::map<Token, Symbol> tokenToTerminal = {
+    tokenToTerminal = {
         {INT, _int},
         {SEMI, _semi},
         {COMMA, _comma},
@@ -116,7 +116,7 @@ Parser grammar::buildGrammar()
 
     ASTGen::Code code;
     // initialize parser with augmented grammar
-    Parser parser(_sPrime, {_program}, _$);
+    parser = Parser(_sPrime, {_program}, _$);
 
     // add production rules according to the grammars
 
@@ -132,6 +132,7 @@ Parser grammar::buildGrammar()
 
                                 mainFunction->addChild(node);
                             }
+                            return nullptr;
                          });
     parser.addProduction(_var_declarations, {_var_declarations, _var_declaration},
                          [&](std::vector<std::shared_ptr<ASTGen::SyntaxTreeNode>> rhsNodes) -> std::shared_ptr<ASTGen::SyntaxTreeNode>
@@ -168,7 +169,7 @@ Parser grammar::buildGrammar()
                          [&](std::vector<std::shared_ptr<ASTGen::SyntaxTreeNode>> rhsNodes) -> std::shared_ptr<ASTGen::SyntaxTreeNode>
                          {
                             auto sym = code.symbolTable.declareSymbol(rhsNodes[0]->id);
-                            code.int2Reg(rhsNodes[2]->intVal, ASTGen::Register("$t1"););
+                            code.int2Reg(rhsNodes[2]->intVal, ASTGen::Register("$t1"));
                             code.reg2Sym(ASTGen::Register("$t1"), sym);
                             return nullptr;
                          });
@@ -332,6 +333,7 @@ Parser grammar::buildGrammar()
                          [&](std::vector<std::shared_ptr<ASTGen::SyntaxTreeNode>> rhsNodes) -> std::shared_ptr<ASTGen::SyntaxTreeNode>
                          {
                              auto newNode = std::make_shared<ASTGen::SyntaxTreeNode>(ASTGen::RETURN_STATEMENT);
+                             return newNode;
                          });
     // read statement
     parser.addProduction(_read_statement, {_read, _lpar, _id, _rpar},
@@ -534,6 +536,7 @@ Parser grammar::buildGrammar()
                          {
                              auto newNode = std::make_shared<ASTGen::SyntaxTreeNode>(ASTGen::UNARY_EXPRESSION, "not");
                              newNode->addChild(rhsNodes[1]);
+                             return newNode;
                          });
     parser.addProduction(_exp10, {_minus, _exp11},
                          [&](std::vector<std::shared_ptr<ASTGen::SyntaxTreeNode>> rhsNodes) -> std::shared_ptr<ASTGen::SyntaxTreeNode>
@@ -541,6 +544,7 @@ Parser grammar::buildGrammar()
                              // neg is pseudo-instruction for unary subtraction
                              auto newNode = std::make_shared<ASTGen::SyntaxTreeNode>(ASTGen::UNARY_EXPRESSION, "neg");
                              newNode->addChild(rhsNodes[1]);
+                             return newNode;
                          });
     parser.addProduction(_exp10, {_exp11},
                          [&](std::vector<std::shared_ptr<ASTGen::SyntaxTreeNode>> rhsNodes) -> std::shared_ptr<ASTGen::SyntaxTreeNode>
@@ -553,6 +557,7 @@ Parser grammar::buildGrammar()
                              auto newNode = std::make_shared<ASTGen::SyntaxTreeNode>(ASTGen::ARRAY_ACCESS);
                              newNode->addChild(rhsNodes[0]); // array name
                              newNode->addChild(rhsNodes[2]); // index
+                             return newNode;
                          });
     parser.addProduction(_exp11, {_int_num},
                          [&](std::vector<std::shared_ptr<ASTGen::SyntaxTreeNode>> rhsNodes) -> std::shared_ptr<ASTGen::SyntaxTreeNode>
@@ -569,8 +574,8 @@ Parser grammar::buildGrammar()
                          {
                              return rhsNodes[1];
                          });
-
-    return parser;
+    parser.build();
+    // return parser;
 
     // std::ofstream file(path);
     // cereal::XMLOutputArchive archive(file);
@@ -580,44 +585,7 @@ Parser grammar::buildGrammar()
 
 parserWrapper::parserWrapper(std::string parserStatePath)
 {
-    parser = ::grammar::buildGrammar();
-    tokenToTerminal = std::map<Token, Symbol> tokenToTerminal = {
-        {INT, _int},
-        {SEMI, _semi},
-        {COMMA, _comma},
-        {ASSIGN, _assign},
-        {ID, _id},
-        {LSQUARE, _lsquare},
-        {RSQUARE, _rsquare},
-        {LBRACE, _lbrace},
-        {RBRACE, _rbrace},
-        {IF, _if},
-        {ELSE, _else},
-        {WHILE, _while},
-        {DO, _do},
-        {RETURN, _return},
-        {READ, _read},
-        {WRITE, _write},
-        {OROR, _oror},
-        {ANDAND, _andand},
-        {OR_OP, _or_op},
-        {AND_OP, _and_op},
-        {EQ, _eq},
-        {NOTEQ, _noteq},
-        {LT, _lt},
-        {GT, _gt},
-        {LTEQ, _lteq},
-        {GTEQ, _gteq},
-        {SHL_OP, _shl_op},
-        {SHR_OP, _shr_op},
-        {PLUS, _plus},
-        {MINUS, _minus},
-        {MUL_OP, _mul_op},
-        {DIV_OP, _div_op},
-        {NOT_OP, _not_op},
-        {INT_NUM, _int_num},
-        {LPAR, _lpar},
-        {RPAR, _rpar}};
+    buildGrammar();
     // std::ifstream is(parserStatePath);
     // if (!is.good())
     //     throw std::runtime_error("Cannot open parser state file: " + parserStatePath);

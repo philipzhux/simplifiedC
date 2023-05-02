@@ -5,10 +5,10 @@ CXX = g++
 INCLUDES = -I./parser_src/include -I./scanner_src/include -I. -I./ast
 
 # Compiler flags
-CXXFLAGS = -Wall -std=c++14 $(INCLUDES)
+CXXFLAGS = -Wall -std=c++14 $(INCLUDES) -g
 
 # Source files
-AST_SRC = ./ast/code.cpp ./ast/symbol_table.cpp ./syntax_tree.cpp
+AST_SRC = ./ast/code.cpp ./ast/symbol_table.cpp ./ast/syntax_tree.cpp
 SCANNER_SRC = ./scanner_src/dfa.cpp ./scanner_src/nfa.cpp ./scanner_src/scanner.cpp
 # BUILDER_SRC = ./parser_src/build.cpp ./parser_src/configuration.cpp ./parser_src/grammar.cpp ./parser_src/parser.cpp ./parser_src/production.cpp ./parser_src/symbol.cpp
 PARSER_SRC = ./parser_src/main.cpp ./parser_src/configuration.cpp ./parser_src/grammar.cpp ./parser_src/parser.cpp ./parser_src/production.cpp ./parser_src/symbol.cpp
@@ -28,7 +28,7 @@ all: $(PARSER_EXE)
 # $(BUILDER_EXE): $(BUILDER_OBJ) $(SCANNER_SRC)
 # 	$(CXX) $(CXXFLAGS) $^ -o $@
 
-$(PARSER_EXE): $(PARSER_OBJ) $(AST_OBJ) $(SCANNER_OBJ)
+$(PARSER_EXE): $(AST_OBJ) $(SCANNER_OBJ) $(PARSER_OBJ) 
 	$(CXX) $(CXXFLAGS) $^ -o $@
 
 build/%.o: %.cpp

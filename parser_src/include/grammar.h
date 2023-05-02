@@ -4,10 +4,10 @@
 #include <cereal/archives/xml.hpp>
 #include <fstream>
 
-namespace grammar
-{
- size_t buildGrammar(std::string);
-}
+// namespace grammar
+// {
+//  Parser buildGrammar();
+// }
 
 
 class parserWrapper
@@ -16,4 +16,5 @@ class parserWrapper
     parserWrapper(std::string);
     Parser parser;
     std::map<Token, Symbol> tokenToTerminal;
+    void buildGrammar();
 };

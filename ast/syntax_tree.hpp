@@ -32,7 +32,8 @@ namespace ASTGen
         DO_WHILE_STATEMENT,
         RETURN_STATEMENT,
         FUNCTION,
-        COMPOSITE
+        COMPOSITE,
+        RESERVED_WORDS
     };
 
     class SyntaxTreeNode

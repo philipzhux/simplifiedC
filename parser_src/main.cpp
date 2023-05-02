@@ -4,7 +4,7 @@
 #include <cereal/archives/xml.hpp>
 #include <fstream>
 #include "grammar.h"
-
+#include <stdlib.h>
 inline bool exists_test(const std::string &name)
 {
     std::ifstream f(name.c_str());
@@ -32,28 +32,49 @@ int main(int argc, char **argv)
         parserWrapper wrapper("");
         std::vector<Symbol> symbols;
         
-        // {
-        //     // scanner scope
-        //     std::string src = "";
-        //     for (std::string line; std::getline(std::cin, line);)
-        //     {
-        //         src += line + "\n";
-        //     }
-        //     Scanner lex(src);
-        //     if (!lex.compile())
-        //     {
-        //         std::cout << "Scanner Syntax Error" << std::endl;
-        //         exit(1);
-        //     }
+        {
+            // scanner scope
+            std::string src = "";
+            for (std::string line; std::getline(std::cin, line);)
+            {
+                src += line + "\n";
+            }
+            Scanner lex(src);
+            if (!lex.compile())
+            {
+                std::cout << "Scanner Syntax Error" << std::endl;
+                exit(1);
+            }
 
             
-        //     for (auto &token : lex.matchedTokens)
-        //     {
-        //         symbols.push_back(wrapper.tokenToTerminal.at(token));
-        //     }
-            
-        // }
+            for (auto &token : lex.matchedTokens)
+            {
+                auto symbol = wrapper.tokenToTerminal.at(token.token);
+                switch (token.token)
+                {
+                    case Token::ID:
+                    {
+                        symbol.syntaxTreeNode = std::make_shared<ASTGen::SyntaxTreeNode>(ASTGen::ID,token.matchedString);
+                        break;
+                    }
+                    case Token::INT_NUM:
+                    {
+                        symbol.syntaxTreeNode = std::make_shared<ASTGen::SyntaxTreeNode>(ASTGen::INTLITERAL,::atoi(token.matchedString.c_str()));
+                        break;
+                    }
 
-        // wrapper.parser.parse(symbols);
+                    default:
+                    {
+                        symbol.syntaxTreeNode = std::make_shared<ASTGen::SyntaxTreeNode>(ASTGen::RESERVED_WORDS);
+                        break;
+                    }
+
+                }
+                symbols.push_back(symbol);
+            }
+            
+        }
+        // wrapper.buildGrammar();
+        wrapper.parser.parse(symbols);
     }
 }
