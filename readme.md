@@ -32,7 +32,7 @@ The project is organized into the following structure:
 │   ├── production.cpp
 │   └── symbol.cpp
 ├── readme.md
-├── run_parser.sh
+├── run_compiler.sh
 ├── scanner_src
 │   ├── Makefile
 │   ├── README.md
