@@ -149,7 +149,7 @@ void parserWrapper::buildGrammar()
     parser.addProduction(_var_declarations, {},
                          [&](std::vector<std::shared_ptr<ASTGen::SyntaxTreeNode>> rhsNodes) -> std::shared_ptr<ASTGen::SyntaxTreeNode>
                          {
-                             return nullptr;
+                             return std::make_shared<ASTGen::SyntaxTreeNode>(ASTGen::COMPOSITE);
                          });
 
     // variable declaration
@@ -163,7 +163,7 @@ void parserWrapper::buildGrammar()
     parser.addProduction(_declaration_list, {_declaration_list, _comma, _declaration},
                          [&](std::vector<std::shared_ptr<ASTGen::SyntaxTreeNode>> rhsNodes) -> std::shared_ptr<ASTGen::SyntaxTreeNode>
                          {
-                            
+
                             rhsNodes[0]->addChild(rhsNodes[2]);
                             return rhsNodes[0];
                          });

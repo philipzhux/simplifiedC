@@ -29,7 +29,7 @@ void ASTGen::Code::sym2Reg(ASTGen::SymEntry symbolIdx, ASTGen::Register reg)
 
 void ASTGen::Code::getAddressOf(ASTGen::SymEntry symbolIdx, ASTGen::Register dest)
 {
-    addAsmLine(::stringFormat("add %s,%d,$fp", dest.c_str(), int(symbolIdx) * -4));
+    addAsmLine(::stringFormat("addi %s,$fp,%d", dest.c_str(), int(symbolIdx) * -4));
 }
 
 

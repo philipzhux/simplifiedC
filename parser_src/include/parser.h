@@ -46,7 +46,9 @@ public:
     void printActionTable() const;
     void printGotoTable() const;
     void build();
+    void build(bool verbose);
     bool parse(std::vector<Symbol> input);
+    bool parse(std::vector<Symbol> input, bool verbose);
     int addProduction(Symbol lhs, std::vector<Symbol> rhs, std::function<std::shared_ptr<ASTGen::SyntaxTreeNode>(std::vector<std::shared_ptr<ASTGen::SyntaxTreeNode>>)> action);
     std::vector<Configuration> getClosure(const Configuration &configuration);
     std::unordered_set<Symbol> getFirstSet(Symbol symbol);

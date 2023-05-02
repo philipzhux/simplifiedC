@@ -5,9 +5,8 @@ Parser::Parser() {}
 
 Parser::Parser(Symbol startLhs, std::vector<Symbol> startRhs, Terminal endSymbol) : endSymbol(endSymbol)
 {
-    startProductionId = addProduction(startLhs, startRhs, [](std::vector<std::shared_ptr<ASTGen::SyntaxTreeNode>> children) -> std::shared_ptr<ASTGen::SyntaxTreeNode> {
-        return children[0];
-    });
+    startProductionId = addProduction(startLhs, startRhs, [](std::vector<std::shared_ptr<ASTGen::SyntaxTreeNode>> children) -> std::shared_ptr<ASTGen::SyntaxTreeNode>
+                                      { return children[0]; });
     // augmented production should be the production 0
     // reduced by production 0 is the accept state
     assert(startProductionId == 0);
@@ -25,16 +24,17 @@ std::vector<Configuration> Parser::getClosure(const Configuration &initConfigura
     size_t startExpandIdx = 0;
     size_t modifiedPoint = 0;
     closure.push_back(initConfiguration);
-    while (configAdded||configModified) // keep expanding until no new configuration is added or modified
+    while (configAdded || configModified) // keep expanding until no new configuration is added or modified
     {
         // by default, start from newly added configurations
         // if the closure is modified, then start from the modified point
-        if (configModified && startExpandIdx > modifiedPoint) startExpandIdx = modifiedPoint;
+        if (configModified && startExpandIdx > modifiedPoint)
+            startExpandIdx = modifiedPoint;
         size_t size = closure.size();
         configAdded = false;
         configModified = false;
         modifiedPoint = size;
-       
+
         for (; startExpandIdx < size; startExpandIdx++)
         {
             if (closure[startExpandIdx].isComplete())
@@ -82,12 +82,14 @@ std::vector<Configuration> Parser::getClosure(const Configuration &initConfigura
                                             // found a configuration with same production and dot position, but different lookahead
                                             // merge the lookaheads
                                             closure[compareConfigIdx].lookaheads.insert(lookahead);
-                                            if(compareConfigIdx<size) {
+                                            if (compareConfigIdx < size)
+                                            {
                                                 // if the configuration is newly added, it is not counted as modified
                                                 // otherwise, it is modified
                                                 configModified = true;
                                                 // move the modified point to the leftmost modified configuration
-                                                if(compareConfigIdx<modifiedPoint) modifiedPoint = compareConfigIdx;
+                                                if (compareConfigIdx < modifiedPoint)
+                                                    modifiedPoint = compareConfigIdx;
                                             }
                                         }
 
@@ -112,9 +114,14 @@ std::vector<Configuration> Parser::getClosure(const Configuration &initConfigura
     return closure;
 }
 
+void Parser::build()
+{
+    build(false);
+}
+
 /// @brief build the parser
 /// @details build the parser by constructing the configuration sets, action table and goto table
-void Parser::build()
+void Parser::build(bool verbose)
 {
     // build configuration sets and action table
     Configuration initialConfig = Configuration(productions[startProductionId], 0, {endSymbol});
@@ -216,13 +223,17 @@ void Parser::build()
                         bool tolerate = false;
                         if (actionTable[std::make_pair(configurationSet.id, configLookahead.id)] > 0)
                         {
-                            std::cout << "[Warning] shift/reduce conflict, use shift instead" << std::endl;
-                            std::cout << "Ignore possible reduce by rule: " << configuration.production->lhs.humanReadableName << " -> ";
-                            for (const auto &symbol : configuration.production->rhs)
+                            if (verbose)
                             {
-                                std::cout << symbol.humanReadableName << " ";
+                                std::cout << "[Warning] shift/reduce conflict, use shift instead" << std::endl;
+                                std::cout << "Ignore possible reduce by rule: " << configuration.production->lhs.humanReadableName << " -> ";
+                                for (const auto &symbol : configuration.production->rhs)
+                                {
+                                    std::cout << symbol.humanReadableName << " ";
+                                }
+                                std::cout << std::endl
+                                          << std::endl;
                             }
-                            std::cout << std::endl << std::endl;
 
                             // we tolerate the shift/reduce conflict by using shift by default
                             // this solves the problem of dangling else in C such that else is
@@ -262,10 +273,15 @@ void Parser::build()
     }
 }
 
+bool Parser::parse(std::vector<Symbol> input)
+{
+    return parse(input, false);
+}
+
 /// @brief parse the input from the lexer
 /// @details this is the core function of the parser, it parses the input from the lexer with the action table and goto table
 /// @param input the input from the lexer
-bool Parser::parse(std::vector<Symbol> input)
+bool Parser::parse(std::vector<Symbol> input, bool verbose)
 {
     std::vector<int> stack;
     std::vector<Symbol> symbolStack;
@@ -291,16 +307,19 @@ bool Parser::parse(std::vector<Symbol> input)
             symbolStack.push_back(currentSymbol);
             inputCursor++;
             // print shift message
-            std::cout << "state: " << currentState << "\t";
-            std::cout << "next type: " << currentSymbol.humanReadableName << "\t";
-            std::cout << "shift to state " << nextState << std::endl;
-            std::cout << "current situation: ";
-            // print current situation according to the stack
-            for (size_t i = 0; i < symbolStack.size(); i++)
+            if (verbose)
             {
-                std::cout << symbolStack[i].humanReadableName << " ";
+                std::cout << "state: " << currentState << "\t";
+                std::cout << "next type: " << currentSymbol.humanReadableName << "\t";
+                std::cout << "shift to state " << nextState << std::endl;
+                std::cout << "current situation: ";
+                // print current situation according to the stack
+                for (size_t i = 0; i < symbolStack.size(); i++)
+                {
+                    std::cout << symbolStack[i].humanReadableName << " ";
+                }
+                std::cout << "|" << std::endl;
             }
-            std::cout << "|" << std::endl;
         }
         else if (nextState < 0)
         {
@@ -310,7 +329,7 @@ bool Parser::parse(std::vector<Symbol> input)
             for (size_t j = 0; j < productions[production]->rhs.size(); j++)
             {
                 stack.pop_back();
-                rhsNodes.insert(rhsNodes.begin(),symbolStack.back().syntaxTreeNode);
+                rhsNodes.insert(rhsNodes.begin(), symbolStack.back().syntaxTreeNode);
                 symbolStack.pop_back();
             }
 
@@ -328,47 +347,53 @@ bool Parser::parse(std::vector<Symbol> input)
 
             stack.push_back(nextState);
             symbolStack.push_back(productions[production]->lhs);
-            symbolStack[symbolStack.size()-1].syntaxTreeNode = productions[production]->action(rhsNodes);
-            
+            symbolStack[symbolStack.size() - 1].syntaxTreeNode = productions[production]->action(rhsNodes);
 
             /*
             Sample reduce message
             state: 49	next type: SEMI		reduce by grammar 9: declaration->ID
             current situation: INT | declaration
             */
-            std::cout << "state: " << currentState << "\t";
-            std::cout << "next type: " << currentSymbol.humanReadableName << "\t";
-            std::cout << "reduce by grammar " << production << ": " << productions[production]->lhs.humanReadableName << "->";
-            for (size_t j = 0; j < productions[production]->rhs.size(); j++)
+            if (verbose)
             {
-                std::cout << productions[production]->rhs[j].humanReadableName << " ";
+                std::cout << "state: " << currentState << "\t";
+                std::cout << "next type: " << currentSymbol.humanReadableName << "\t";
+                std::cout << "reduce by grammar " << production << ": " << productions[production]->lhs.humanReadableName << "->";
+                for (size_t j = 0; j < productions[production]->rhs.size(); j++)
+                {
+                    std::cout << productions[production]->rhs[j].humanReadableName << " ";
+                }
+                if (productions[production]->rhs.size() == 0)
+                {
+                    std::cout << "{}";
+                }
+                std::cout << std::endl;
+                std::cout << "current situation: ";
+                // print current situation according to the stack
+                for (int i = 0; i < int(symbolStack.size()) - 1; i++)
+                {
+                    std::cout << symbolStack[i].humanReadableName << " ";
+                }
+                std::cout << "| " << symbolStack.back().humanReadableName << std::endl;
             }
-            if (productions[production]->rhs.size() == 0)
-            {
-                std::cout << "{}";
-            }
-            std::cout << std::endl;
-            std::cout << "current situation: ";
-            // print current situation according to the stack
-            for (int i = 0; i < int(symbolStack.size()) - 1; i++)
-            {
-                std::cout << symbolStack[i].humanReadableName << " ";
-            }
-            std::cout << "| " << symbolStack.back().humanReadableName << std::endl;
         }
         else
         {
-            std::cout << "reduce by augmented grammar: " << productions[0]->lhs.humanReadableName << "->";
-            for (size_t j = 0; j < productions[0]->rhs.size(); j++)
+            if (verbose)
             {
-                std::cout << productions[0]->rhs[j].humanReadableName << " ";
+
+                std::cout << "reduce by augmented grammar: " << productions[0]->lhs.humanReadableName << "->";
+                for (size_t j = 0; j < productions[0]->rhs.size(); j++)
+                {
+                    std::cout << productions[0]->rhs[j].humanReadableName << " ";
+                }
+                std::cout << std::endl
+                          << std::endl;
+                std::cout << "Accepted" << std::endl;
             }
-            std::cout << std::endl
-                      << std::endl;
-            std::cout << "Accepted" << std::endl;
             return true;
         }
-        std::cout << std::endl;
+        if(verbose) std::cout << std::endl;
     }
     return false;
 }

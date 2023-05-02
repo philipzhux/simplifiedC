@@ -44,7 +44,7 @@ ASTGen::SyntaxTreeNode::SyntaxTreeNode(ASTGen::NodeType _nodeType, int _intVal) 
 
 ASTGen::SymEntry ASTGen::SyntaxTreeNode::generateCode(ASTGen::Code &code)
 {
-    Register reg1("$t1"), reg2("$t2"), reg3("$t3"), reg4("t4");
+    Register reg1("$t1"), reg2("$t2"), reg3("$t3"), reg4("$t4");
     switch (nodeType)
     {
     case FUNCTION:
@@ -104,7 +104,7 @@ ASTGen::SymEntry ASTGen::SyntaxTreeNode::generateCode(ASTGen::Code &code)
         }
         // for C all variables are declared before use, so this should not happen
         // raise runtime error
-        throw std::runtime_error("Symbol not found");
+        throw std::runtime_error(::stringFormat("Variable %s is not declared", id.c_str()));
         
     }
     case INTLITERAL:
@@ -119,12 +119,12 @@ ASTGen::SymEntry ASTGen::SyntaxTreeNode::generateCode(ASTGen::Code &code)
         SymEntry rightSym = children[1]->generateCode(code);
         if(children[1]->nodeType == ARRAY_ACCESS) code.mem2Sym(rightSym, rightSym);
         SymEntry leftSym = children[0]->generateCode(code);
-        if(children[2]->nodeType == ARRAY_ACCESS)
+        if(children[0]->nodeType == ARRAY_ACCESS)
         {
             // store value in rightSym to the address that leftSym points to
             code.sym2Reg(leftSym, reg3); // reg3 is the address
             code.sym2Reg(rightSym, reg4); // reg4 is the value
-            code.addAsmLine(::stringFormat("%s %s,%s,%s", "sw", reg4.c_str(), reg3.c_str(), "0"));
+            code.addAsmLine(::stringFormat("%s %s,0(%s)", "sw", reg4.c_str(), reg3.c_str()));
         }
         else
         {
@@ -175,7 +175,7 @@ ASTGen::SymEntry ASTGen::SyntaxTreeNode::generateCode(ASTGen::Code &code)
         else if (op=="eq")
         {
             code.addAsmLine(::stringFormat("%s %s,%s,%s", "xor", reg1.c_str(), reg2.c_str(), reg3.c_str()));
-            code.addAsmLine(::stringFormat("%s %s,%s,%s", "sltu", reg1.c_str(), reg1.c_str(), "1"));
+            code.addAsmLine(::stringFormat("%s %s,%s,%s", "sltiu", reg1.c_str(), reg1.c_str(), "1"));
         }
         else if (op=="andand")
         {
@@ -185,7 +185,7 @@ ASTGen::SymEntry ASTGen::SyntaxTreeNode::generateCode(ASTGen::Code &code)
             code.addAsmLine(::stringFormat("%s %s,%s,%s", "beq", reg2.c_str(), "$zero", andFalse.c_str()));
             code.addAsmLine(::stringFormat("%s %s,%s,%s", "beq", reg3.c_str(), "$zero", andFalse.c_str()));
             code.addAsmLine(::stringFormat("%s %s,%s,%s", "addi", reg1.c_str(), "$zero", "1"));
-            code.addAsmLine(::stringFormat("%s %s,%s", "j", andEnd.c_str()));
+            code.addAsmLine(::stringFormat("%s %s", "j", andEnd.c_str()));
             code.addAsmLine(::stringFormat("%s:", andFalse.c_str()));
             code.addAsmLine(::stringFormat("%s %s,%s,%s", "addi", reg1.c_str(), "$zero", "0"));
             code.addAsmLine(::stringFormat("%s:", andEnd.c_str()));
@@ -198,7 +198,7 @@ ASTGen::SymEntry ASTGen::SyntaxTreeNode::generateCode(ASTGen::Code &code)
             code.addAsmLine(::stringFormat("%s %s,%s,%s", "bne", reg2.c_str(), "$zero", orTrue.c_str()));
             code.addAsmLine(::stringFormat("%s %s,%s,%s", "bne", reg3.c_str(), "$zero", orTrue.c_str()));
             code.addAsmLine(::stringFormat("%s %s,%s,%s", "addi", reg1.c_str(), "$zero", "0"));
-            code.addAsmLine(::stringFormat("%s %s,%s", "j", orEnd.c_str()));
+            code.addAsmLine(::stringFormat("%s %s", "j", orEnd.c_str()));
             code.addAsmLine(::stringFormat("%s:", orTrue.c_str()));
             code.addAsmLine(::stringFormat("%s %s,%s,%s", "addi", reg1.c_str(), "$zero", "1"));
             code.addAsmLine(::stringFormat("%s:", orEnd.c_str()));
@@ -323,13 +323,26 @@ ASTGen::SymEntry ASTGen::SyntaxTreeNode::generateCode(ASTGen::Code &code)
     }
     case READ_STATEMENT:
     {
-        SymEntry readSym = children[0]->generateCode(code);
-        code.sysRead(readSym);
+        SymEntry leftSym = children[0]->generateCode(code);
+         if(children[0]->nodeType == ARRAY_ACCESS)
+        {
+            SymEntry rightSym = code.symbolTable.declareTempSymbol();
+            code.sysRead(rightSym); // read value into rightSym
+            // store value in rightSym to the address that leftSym points to
+            code.sym2Reg(leftSym, reg3); // reg3 is the address
+            code.sym2Reg(rightSym, reg4); // reg4 is the value
+            code.addAsmLine(::stringFormat("%s %s,0(%s)", "sw", reg4.c_str(), reg3.c_str()));
+            code.symbolTable.freeTempSymbol(rightSym);
+            return ASTGen::NORETURN;
+        }
+        code.sysRead(leftSym);
         return ASTGen::NORETURN;
     }
     case WRITE_STATEMENT:
     {
         SymEntry writeSym = children[0]->generateCode(code);
+        if (children[0]->nodeType == ARRAY_ACCESS)
+            code.mem2Sym(writeSym, writeSym);
         code.sysWrite(writeSym);
         return ASTGen::NORETURN;
     }

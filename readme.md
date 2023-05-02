@@ -1,155 +1,46 @@
-# LR(1) Parser for a Simplified C Language
+# Simplified C Compiler Report
 
+This report covers the main aspects of implementing a compiler for a simplified C language. The compiler is built using a scanner and a parser that have been developed in previous projects, and it also includes an AST generator to generate the code.
 
-## Code Statistics
+## 1. Implementing the Scanner (Lexer)
 
-```Markdown
--------------------------------------------------------------------------------
-Language                     files          blank        comment           code
--------------------------------------------------------------------------------
-C/C++ Header                    93           4404           7771          18953
-Text                             6           1235              0           2502
-C++                             11            132            126           1061
-HTML                             1             23              0            383
-JSON                             4              1              0            186
-Markdown                         2             58              0            133
-make                             2             14              6             29
-Bourne Shell                     2              0              0              4
--------------------------------------------------------------------------------
-SUM:                           121           5867           7903          23251
--------------------------------------------------------------------------------
+The scanner is based on a previously implemented NFA regex engine, which is responsible for tokenizing the input source code. It converts the input source code into a sequence of tokens that represent the lexical elements of the language, such as keywords, identifiers, literals, and operators.
+
+The scanner uses regular expressions to define the patterns of these lexical elements, and the NFA regex engine matches these patterns in the input source code. The scanner then returns a stream of tokens to the parser, which will be used to build the syntax tree.
+
+## 2. Implementing the Parser
+
+The parser is an LR(1) shift-reduce parser that was developed in a previous project. It takes the stream of tokens produced by the scanner and constructs a syntax tree based on the grammar rules of the simplified C language. The grammar rules are defined using a set of production rules, and the parser uses an LR(1) parsing table to determine the actions (shift, reduce, or accept) to take when parsing the input tokens.
+
+The parser is also responsible for handling syntax errors in the input source code. If a syntax error is detected, the parser will report the error and halt the parsing process.
+
+## 3. Code Generation
+
+The code generation process is the most important aspect of the compiler. It involves the following steps:
+
+1. **AST Generation**: The parser creates an Abstract Syntax Tree (AST) during the parsing process using a class called `ASTGen::SyntaxTreeNode`. Each node in the AST represents a syntax element, such as an expression, statement, or declaration. The tree structure represents the hierarchical structure of the source code.
+
+2. **Semantic Actions**: Semantic actions are attached to the production rules in the form of lambda functions. These functions are executed during the parsing process when the parser encounters a reduce action. The semantic actions are responsible for generating the code as the AST is being built.
+
+For example, the code generation for an while statement can be achieved with the following action lambda:
+
+```cpp
+parser.addProduction(
+    _while_statement, {_while, _lpar, _exp, _rpar, _code_block},
+    [&](std::vector<std::shared_ptr<ASTGen::SyntaxTreeNode>> rhsNodes) -> std::shared_ptr<ASTGen::SyntaxTreeNode>
+    {
+        auto newNode = std::make_shared<ASTGen::SyntaxTreeNode>(ASTGen::WHILE_STATEMENT);
+        newNode->children.push_back(rhsNodes[2]); // condition exp
+        newNode->children.push_back(rhsNodes[4]); // code block
+        return newNode;
+    }
+);
+
 ```
 
-## Introduction
-This is a design and implementation of an LR(1) parser for a simplified version of the C language. The parser is able to parse a given sequence of C tokens and produce the corresponding parse tree. It follows the LR(1) grammar designed to enforce proper precedence of operators. An LR(1) parsing table is built and the parser state would be exported as an XML file. Later the parser state can be utilized to parse a series of C tokens.
+3. **Handling Array Access and Variable Declaration**: The compiler handles array access and variable declaration, including static arrays. When the parser encounters an array access or a variable declaration, it generates the appropriate code and updates the symbol table accordingly.
 
-## LR(1) Grammar
-The LR(1) grammar for the simplified C language is presented below:
+For instance, the action lambda for static array access can be implemented as follows:
 
-```Rust
-[Production Rules]
-program -> var_declarations statements
-
-var_declarations -> var_declarations var_declaration
-var_declarations -> var_declaration
-var_declarations -> ε
-
-var_declaration -> INT declaration_list SEMI
-
-declaration_list -> declaration_list COMMA declaration
-declaration_list -> declaration
-
-declaration -> ID ASSIGN INT_NUM
-declaration -> ID LSQUARE INT_NUM RSQUARE
-declaration -> ID
-
-code_block -> statement
-code_block -> LBRACE statements RBRACE
-
-statements -> statements statement
-statements -> statement
-
-statement -> assign_statement SEMI
-statement -> control_statement
-statement -> read_write_statement SEMI
-statement -> SEMI
-
-control_statement -> if_statement
-control_statement -> while_statement
-control_statement -> do_while_statement SEMI
-control_statement -> return_statement SEMI
-
-read_write_statement -> read_statement
-read_write_statement -> write_statement
-
-assign_statement -> ID LSQUARE exp RSQUARE ASSIGN exp
-assign_statement -> ID ASSIGN exp
-
-if_statement -> if_stmt
-if_statement -> if_stmt ELSE code_block
-
-if_stmt -> IF LPAR exp RPAR code_block
-
-while_statement -> WHILE LPAR exp RPAR code_block
-
-do_while_statement -> DO code_block WHILE LPAR exp RPAR
-
-return_statement -> RETURN
-
-read_statement -> READ LPAR ID RPAR
-
-write_statement -> WRITE LPAR exp RPAR
-
-exp -> exp1
-
-exp1 -> exp1 OROR exp2
-exp1 -> exp2
-
-exp2 -> exp2 ANDAND exp3
-exp2 -> exp3
-
-exp3 -> exp3 OR_OP exp4
-exp3 -> exp4
-
-exp4 -> exp4 AND_OP exp5
-exp4 -> exp5
-
-exp5 -> exp5 EQ exp6
-exp5 -> exp5 NOTEQ exp6
-exp5 -> exp6
-
-exp6 -> exp6 LT exp7
-exp6 -> exp6 GT exp7
-exp6 -> exp6 LTEQ exp7
-exp6 -> exp6 GTEQ exp7
-exp6 -> exp7
-
-exp7 -> exp7 SHL_OP exp8
-exp7 -> exp7 SHR_OP exp8
-exp7 -> exp8
-
-exp8 -> exp8 PLUS exp9
-exp8 -> exp8 MINUS exp9
-exp8 -> exp9
-
-exp9 -> exp9 MUL_OP exp10
-exp9 -> exp9 DIV_OP exp10
-exp9 -> exp10
-
-exp10 -> NOT_OP exp11
-exp10 -> MINUS exp11
-exp10 -> exp11
-
-exp11 -> ID LSQUARE exp RSQUARE
-exp11 -> INT_NUM
-exp11 -> ID
-exp11 -> LPAR exp RPAR
-```
-
-## Building the LR(1) Parsing Table
-
-The LR(1) parsing table is built using the Parser::build() method, which constructs the configuration sets, action table, and goto table. The implementation proceeds as follows:
-
-* Initializes the configuration sets with the initial configuration set and its closure.
-* Iterates through the configuration sets and computes transitions for each configuration in the set. Transitions are grouped based on the symbol causing the transition.
-* For each transition, the method finds or creates a new configuration set and updates the appropriate action or goto table entry.
-* Repeats this process until no changes are made to the configuration sets or tables.
-* Considers reduction cases for each complete configuration in the configuration sets, updating the action table accordingly.
-
-## Parsing Using the LR(1) Parsing Table
-
-To parse a series of C tokens, the parser reads the input and consults the LR(1) parsing table to determine the appropriate action to take for each token. The parser follows the steps of shifting, reducing, or accepting based on the action specified in the parsing table. Upon completion, the parser produces the corresponding parse tree for the given input.
-
-## Handling Shift-Reduce Conflicts (Dangling Else)
-
-The implementation handles shift-reduce conflicts, such as those encountered in if statements, by preferring the "shift" action. This choice ensures that the "else" part of an if statement is associated with the nearest "if". In case of a reduce/reduce conflict, the implementation reports an error and terminates the program.
-
-## Miscellaneous
-The implementation produces two executable files: "builder" and "parser". The "builder" program constructs the LR(1) parser state, serializes it, and saves it to a file (e.g., "parser.xml") on disk. The "parser" program reads the serialized parser state file, deserializes it, and parses the input using the deserialized parser state, eliminating the need to rebuild the tables.
-
-> Usage:
->  * Builder: builder ./parser.xml (auto invoked by make)
->  * Parser: parser ./parser.xml (auto invoked by run_parser.sh)
-
-## Conclusion
-This report presented the design and implementation of an LR(1) parser for a simplified C language. The parser is capable of parsing C tokens and producing parse trees using the LR(1) parsing table. The implementation handles shift-reduce conflicts and provides two executable files, "builder" and "parser", to streamline the process of building and parsing the input.
+```cpp
+parser
