@@ -33,7 +33,11 @@ namespace ASTGen
         RETURN_STATEMENT,
         FUNCTION,
         COMPOSITE,
-        RESERVED_WORDS
+        RESERVED_WORDS,
+        VAR_DECL,
+        VAR_DECL_INIT,
+        ARRAY_DECL,
+        
     };
 
     class SyntaxTreeNode

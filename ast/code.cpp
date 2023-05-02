@@ -9,7 +9,7 @@
 
 ASTGen::Code::Code(): symbolTable(this)
 {
-    codeLines.push_back("move $fp,$sp"); // initialize $fp to $sp, $fp being start of stack
+    // codeLines.push_back("move $fp,$sp"); // initialize $fp to $sp, $fp being start of stack
 }
 
 std::vector<std::string> &ASTGen::Code::getAssembly()

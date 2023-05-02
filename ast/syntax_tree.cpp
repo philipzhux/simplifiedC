@@ -24,6 +24,15 @@ ASTGen::SyntaxTreeNode::SyntaxTreeNode(ASTGen::NodeType _nodeType, std::string s
     case UNARY_EXPRESSION:
         op = stringVal;
         break;
+    case VAR_DECL:
+        id = stringVal;
+        break;
+    case VAR_DECL_INIT:
+        id = stringVal;
+        break;
+    case ARRAY_DECL:
+        id = stringVal;
+        break;
     default:
         break;
     }
@@ -44,6 +53,7 @@ ASTGen::SymEntry ASTGen::SyntaxTreeNode::generateCode(ASTGen::Code &code)
         std::string functionLabel = "main";
         std::string functionEnd = "mainEnd";
         code.addAsmLine(functionLabel + ":");
+        code.addAsmLine("move $fp,$sp");
         for (auto &child : children)
         {
             if (child == nullptr)
@@ -58,6 +68,23 @@ ASTGen::SymEntry ASTGen::SyntaxTreeNode::generateCode(ASTGen::Code &code)
     {
         std::string functionEnd = "mainEnd";
         code.addAsmLine("j " + functionEnd);
+        return ASTGen::NORETURN;
+    }
+    case VAR_DECL:
+    {
+        code.symbolTable.declareSymbol(id);
+        return ASTGen::NORETURN;
+    }
+    case VAR_DECL_INIT:
+    {
+        auto sym = code.symbolTable.declareSymbol(id);
+        code.int2Reg(intVal, ASTGen::Register("$t1"));
+        code.reg2Sym(ASTGen::Register("$t1"), sym);
+        return ASTGen::NORETURN;
+    }
+    case ARRAY_DECL:
+    {
+        code.symbolTable.declareSymbol(id, intVal*4);
         return ASTGen::NORETURN;
     }
     case COMPOSITE:

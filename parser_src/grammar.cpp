@@ -1,5 +1,4 @@
 #include "grammar.h"
-#include "ast/code.hpp"
 #include <stdexcept>
 
 void parserWrapper::buildGrammar()
@@ -114,7 +113,7 @@ void parserWrapper::buildGrammar()
     NonTerminal _exp10("exp10", Symbol::getId());
     NonTerminal _exp11("exp11", Symbol::getId());
 
-    ASTGen::Code code;
+    
     // initialize parser with augmented grammar
     parser = Parser(_sPrime, {_program}, _$);
 
@@ -132,12 +131,20 @@ void parserWrapper::buildGrammar()
 
                                 mainFunction->addChild(node);
                             }
+                            mainFunction->generateCode(code);
                             return nullptr;
                          });
     parser.addProduction(_var_declarations, {_var_declarations, _var_declaration},
                          [&](std::vector<std::shared_ptr<ASTGen::SyntaxTreeNode>> rhsNodes) -> std::shared_ptr<ASTGen::SyntaxTreeNode>
                          {
-                             return nullptr;
+                            if (rhsNodes[0] == nullptr)
+                            {
+                                auto newNote = std::make_shared<ASTGen::SyntaxTreeNode>(ASTGen::COMPOSITE);
+                                newNote->addChild(rhsNodes[1]);
+                                return newNote;
+                            }
+                            rhsNodes[0]->addChild(rhsNodes[1]);
+                            return rhsNodes[0];
                          });
     parser.addProduction(_var_declarations, {},
                          [&](std::vector<std::shared_ptr<ASTGen::SyntaxTreeNode>> rhsNodes) -> std::shared_ptr<ASTGen::SyntaxTreeNode>
@@ -149,41 +156,52 @@ void parserWrapper::buildGrammar()
     parser.addProduction(_var_declaration, {_int, _declaration_list, _semi},
                          [&](std::vector<std::shared_ptr<ASTGen::SyntaxTreeNode>> rhsNodes) -> std::shared_ptr<ASTGen::SyntaxTreeNode>
                          {
-                             return nullptr;
+                             return rhsNodes[1];
                          });
 
     // declaration list
     parser.addProduction(_declaration_list, {_declaration_list, _comma, _declaration},
                          [&](std::vector<std::shared_ptr<ASTGen::SyntaxTreeNode>> rhsNodes) -> std::shared_ptr<ASTGen::SyntaxTreeNode>
                          {
-                             return nullptr;
+                            
+                            rhsNodes[0]->addChild(rhsNodes[2]);
+                            return rhsNodes[0];
                          });
     parser.addProduction(_declaration_list, {_declaration},
                          [&](std::vector<std::shared_ptr<ASTGen::SyntaxTreeNode>> rhsNodes) -> std::shared_ptr<ASTGen::SyntaxTreeNode>
                          {
-                            return nullptr;
+                            auto newNode = std::make_shared<ASTGen::SyntaxTreeNode>(ASTGen::COMPOSITE);
+                            newNode->addChild(rhsNodes[0]);
+                            return newNode;
                          });
 
     // declaration
     parser.addProduction(_declaration, {_id, _assign, _int_num},
                          [&](std::vector<std::shared_ptr<ASTGen::SyntaxTreeNode>> rhsNodes) -> std::shared_ptr<ASTGen::SyntaxTreeNode>
                          {
-                            auto sym = code.symbolTable.declareSymbol(rhsNodes[0]->id);
-                            code.int2Reg(rhsNodes[2]->intVal, ASTGen::Register("$t1"));
-                            code.reg2Sym(ASTGen::Register("$t1"), sym);
-                            return nullptr;
+                            // auto sym = code.symbolTable.declareSymbol(rhsNodes[0]->id);
+                            // code.int2Reg(rhsNodes[2]->intVal, ASTGen::Register("$t1"));
+                            // code.reg2Sym(ASTGen::Register("$t1"), sym);
+                            // return nullptr;
+                            auto newNode = std::make_shared<ASTGen::SyntaxTreeNode>(ASTGen::VAR_DECL_INIT, rhsNodes[0]->id);
+                            newNode->intVal = rhsNodes[2]->intVal;
+                            return newNode;
+
                          });
     parser.addProduction(_declaration, {_id, _lsquare, _int_num, _rsquare},
                          [&](std::vector<std::shared_ptr<ASTGen::SyntaxTreeNode>> rhsNodes) -> std::shared_ptr<ASTGen::SyntaxTreeNode>
                          {
-                             code.symbolTable.declareSymbol(rhsNodes[0]->id, rhsNodes[2]->intVal * 4);
-                             return nullptr;
+                            //  code.symbolTable.declareSymbol(rhsNodes[0]->id, rhsNodes[2]->intVal * 4);
+                             auto newNode = std::make_shared<ASTGen::SyntaxTreeNode>(ASTGen::ARRAY_DECL, rhsNodes[0]->id);
+                             newNode->intVal = rhsNodes[2]->intVal;
+                             return newNode;
                          });
     parser.addProduction(_declaration, {_id},
                          [&](std::vector<std::shared_ptr<ASTGen::SyntaxTreeNode>> rhsNodes) -> std::shared_ptr<ASTGen::SyntaxTreeNode>
                          {
-                             code.symbolTable.declareSymbol(rhsNodes[0]->id);
-                             return nullptr;
+                            //  code.symbolTable.declareSymbol(rhsNodes[0]->id);
+                            //  return nullptr;
+                            return std::make_shared<ASTGen::SyntaxTreeNode>(ASTGen::VAR_DECL, rhsNodes[0]->id);
                          });
 
     // code block

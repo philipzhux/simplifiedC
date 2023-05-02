@@ -76,5 +76,10 @@ int main(int argc, char **argv)
         }
         // wrapper.buildGrammar();
         wrapper.parser.parse(symbols);
+        for (auto& code : wrapper.code.getAssembly())
+        {
+            std::cout << code << std::endl;
+        }
+
     }
 }

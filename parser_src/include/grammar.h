@@ -1,4 +1,6 @@
+#pragma once
 #include "parser.h"
+#include "ast/code.hpp"
 #include <iostream>
 #include <map>
 #include <cereal/archives/xml.hpp>
@@ -17,4 +19,5 @@ class parserWrapper
     Parser parser;
     std::map<Token, Symbol> tokenToTerminal;
     void buildGrammar();
+    ASTGen::Code code;
 };
