@@ -21,14 +21,15 @@ SCANNER_OBJ = $(patsubst ./%,build/%,$(SCANNER_SRC:.cpp=.o))
 
 # Executables
 # BUILDER_EXE = builder
-PARSER_EXE = parser
+# PARSER_EXE = parser
+COMPILER_EXE = compiler
 
-all: $(PARSER_EXE)
+all: $(COMPILER_EXE)
 
 # $(BUILDER_EXE): $(BUILDER_OBJ) $(SCANNER_SRC)
 # 	$(CXX) $(CXXFLAGS) $^ -o $@
 
-$(PARSER_EXE): $(AST_OBJ) $(SCANNER_OBJ) $(PARSER_OBJ) 
+$(COMPILER_EXE): $(AST_OBJ) $(SCANNER_OBJ) $(PARSER_OBJ) 
 	$(CXX) $(CXXFLAGS) $^ -o $@
 
 build/%.o: %.cpp
@@ -41,7 +42,7 @@ build/%.o: %.cpp
 .PHONY: clean
 
 clean:
-	rm -f $(PARSER_OBJ) $(AST_OBJ) $(PARSER_EXE)
+	rm -f $(PARSER_OBJ) $(AST_OBJ) $(COMPILER_EXE)
 # rm -f $(BUILDER_OBJ) $(PARSER_OBJ) $(BUILDER_EXE) $(PARSER_EXE)
 
 # build_from_scratch: clean $(BUILDER_EXE) parser_xml
