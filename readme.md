@@ -48,32 +48,33 @@ Under the hood, the codeGen part nests in `newNode->generateCode()`, taking ASSI
 ...
 case ASSIGN_STATEMENT:
 {
-SymEntry rightSym = children[1]->generateCode(code);
-if(children[1]->nodeType == ARRAY_ACCESS) 
-   code.mem2Sym(rightSym, rightSym); //dereferencing
-SymEntry leftSym = children[0]->generateCode(code);
-if(children[0]->nodeType == ARRAY_ACCESS)
-{
-   // store value in rightSym to the address that leftSym points to
-   code.sym2Reg(leftSym, reg3); // reg3 is the address
-   code.sym2Reg(rightSym, reg4); // reg4 is the value
-   code.addAsmLine(::stringFormat("%s %s,0(%s)"
-   , "sw", reg4.c_str(), reg3.c_str()));
-}
-else
-{
-   code.sym2Sym(leftSym, rightSym); // code::sym2Sym(dest,src)
-}
+   SymEntry rightSym = children[1]->generateCode(code);
+   if(children[1]->nodeType == ARRAY_ACCESS) 
+      code.mem2Sym(rightSym, rightSym); //dereferencing
+   SymEntry leftSym = children[0]->generateCode(code);
+   if(children[0]->nodeType == ARRAY_ACCESS)
+   {
+      // store value in rightSym to the address that leftSym points to
+      code.sym2Reg(leftSym, reg3); // reg3 is the address
+      code.sym2Reg(rightSym, reg4); // reg4 is the value
+      code.addAsmLine(::stringFormat("%s %s,0(%s)"
+      , "sw", reg4.c_str(), reg3.c_str()));
+   }
+   else
+   {
+      code.sym2Sym(leftSym, rightSym); // code::sym2Sym(dest,src)
+   }
 
-if (code.symbolTable.isEntTemp(leftSym))
-   code.symbolTable.freeTempSymbol(leftSym);
-if (code.symbolTable.isEntTemp(rightSym))
-   code.symbolTable.freeTempSymbol(rightSym);
-return ASTGen::NORETURN;
+   if (code.symbolTable.isEntTemp(leftSym))
+      code.symbolTable.freeTempSymbol(leftSym);
+   if (code.symbolTable.isEntTemp(rightSym))
+      code.symbolTable.freeTempSymbol(rightSym);
+   return ASTGen::NORETURN;
+}
 ...
 ```
 
-3. **Handling Array Access and Variable Declaration**: The compiler handles array access and variable declaration, including static arrays. When the parser encounters an array access or a variable declaration, it generates the appropriate code and updates the symbol table accordingly.
+1. **Handling Array Access and Variable Declaration**: The compiler handles array access and variable declaration, including static arrays. When the parser encounters an array access or a variable declaration, it generates the appropriate code and updates the symbol table accordingly.
 
 
 4. **Control Statements**: The compiler supports control statements such as `while`, `do-while`, and `if-else`. The parser generates the appropriate code for these constructs during the parsing process. The code generation for control statements involves creating and managing labels, generating code for conditions and branches, and ensuring that the control flow is correctly implemented.
