@@ -1,86 +1,101 @@
-# Simplified C Compiler Report
+# CUHK Compiler Course Project: C to MIPS Compiler
 
-This report covers the main aspects of implementing a compiler for a simplified C language. The compiler is built using a scanner and a parser that have been developed in previous projects, and it also includes an AST generator to generate the code.
+This repository contains a C to MIPS compiler developed as a course project for the compiler course `CSC4180` at CUHK. The compiler translates a subset of the C language into MIPS assembly code, focusing on basic arithmetic, logical operations, control structures, and array operations.
 
-## 1. Implementing the Scanner (Lexer)
+## Project Structure
 
-The scanner is based on a previously implemented NFA regex engine, which is responsible for tokenizing the input source code. It converts the input source code into a sequence of tokens that represent the lexical elements of the language, such as keywords, identifiers, literals, and operators.
-
-The scanner uses regular expressions to define the patterns of these lexical elements, and the NFA regex engine matches these patterns in the input source code. The scanner then returns a stream of tokens to the parser, which will be used to build the syntax tree.
-
-## 2. Implementing the Parser
-
-The parser is an LR(1) shift-reduce parser that was developed in a previous project. It takes the stream of tokens produced by the scanner and constructs a syntax tree based on the grammar rules of the simplified C language. The grammar rules are defined using a set of production rules, and the parser uses an LR(1) parsing table to determine the actions (shift, reduce, or accept) to take when parsing the input tokens.
-
-The parser is also responsible for handling syntax errors in the input source code. If a syntax error is detected, the parser will report the error and halt the parsing process.
-
-## 3. Code Generation
-
-The code generation process is the most important aspect of the compiler. I reused the code from project 1 and adapt it to integrate with my previously implemented lexer and parser. Similar to project 1, I adopts an one-pass approach only and due to time constraint I did not implement optimization for register allocation (a graph coloring algo could be used in this case, but it requires 3AC code to be generated instead of compiling in one pass). My implementation involves the following steps:
-
-1. **AST Generation**: The parser creates an Abstract Syntax Tree (AST) during the parsing process using a class called `ASTGen::SyntaxTreeNode`. Each node in the AST represents a syntax element, such as an expression, statement, or declaration. The tree structure represents the hierarchical structure of the source code.
-
-2. **Semantic Actions**: Semantic actions are attached to the production rules in the form of lambda functions. These functions are executed during the parsing process when the parser encounters a reduce action. The semantic actions are responsible for generating the code as the AST is being built.
-
-For example, the code generation for an while statement can be achieved with the following action lambda (**very similar approach to bison**):
-
-```cpp
-parser.addProduction(
-    _while_statement, {_while, _lpar, _exp, _rpar, _code_block},
-    [&](std::vector< std::shared_ptr<ASTGen::SyntaxTreeNode>>
-    rhsNodes) 
-    -> std::shared_ptr<ASTGen::SyntaxTreeNode>
-    {
-        auto newNode = std::make_shared<ASTGen::SyntaxTreeNode>
-        (ASTGen::WHILE_STATEMENT);
-        // condition exp
-        newNode->children.push_back(rhsNodes[2]); 
-        // code block
-        newNode->children.push_back(rhsNodes[4]);
-        return newNode;
-    }
-);
+The project is organized into the following structure:
 
 ```
+.
+├── Makefile
+├── ast (namespace ASTGen)
+│   ├── code.cpp
+│   ├── code.hpp
+│   ├── symbol_table.cpp
+│   ├── symbol_table.hpp
+│   ├── syntax_tree.cpp
+│   ├── syntax_tree.hpp
+│   └── utils.hpp
+├── parser
+├── parser_src
+│   ├── configuration.cpp
+│   ├── grammar.cpp
+│   ├── include
+│   │   ├── configuration.h
+│   │   ├── grammar.h
+│   │   ├── parser.h
+│   │   ├── production.h
+│   │   └── symbol.h
+│   ├── main.cpp
+│   ├── parser.cpp
+│   ├── production.cpp
+│   └── symbol.cpp
+├── readme.md
+├── run_parser.sh
+├── scanner_src
+│   ├── Makefile
+│   ├── README.md
+│   ├── dfa.cpp
+│   ├── include
+│   │   ├── dfa.hpp
+│   │   ├── nfa.hpp
+│   │   └── scanner.hpp
+│   ├── main.cpp
+│   ├── nfa.cpp
+│   ├── run_scanner.sh
+│   └── scanner.cpp
+```
+### Grammar in CFG
+![cfg_ss](https://i.imgur.com/X03xgEx.png)
 
-Under the hood, the codeGen part nests in `newNode->generateCode()`, taking ASSIGN_STATEMENT as an example:
-```cpp
-...
-case ASSIGN_STATEMENT:
-{
-   SymEntry rightSym = children[1]->generateCode(code);
-   if(children[1]->nodeType == ARRAY_ACCESS) 
-      code.mem2Sym(rightSym, rightSym); //dereferencing
-   SymEntry leftSym = children[0]->generateCode(code);
-   if(children[0]->nodeType == ARRAY_ACCESS)
-   {
-      // store value in rightSym to the address that leftSym points to
-      code.sym2Reg(leftSym, reg3); // reg3 is the address
-      code.sym2Reg(rightSym, reg4); // reg4 is the value
-      code.addAsmLine(::stringFormat("%s %s,0(%s)"
-      , "sw", reg4.c_str(), reg3.c_str()));
-   }
-   else
-   {
-      code.sym2Sym(leftSym, rightSym); // code::sym2Sym(dest,src)
-   }
+### Components
 
-   if (code.symbolTable.isEntTemp(leftSym))
-      code.symbolTable.freeTempSymbol(leftSym);
-   if (code.symbolTable.isEntTemp(rightSym))
-      code.symbolTable.freeTempSymbol(rightSym);
-   return ASTGen::NORETURN;
-}
-...
+*To understand the code, you can start with `grammar.cpp/h` and `syntax_tree.cpp/hpp`. You can refer to `parser.cpp/h` for parser and `scanner.cpp/h` for scanner.*
+
+- `ast`: Contains the code for abstract syntax tree (AST) generation, symbol table management, and MIPS assembly code generation.
+  - `code.cpp/hpp`: Encapsulates code generation small building blocks.
+  - `symbol_table.cpp/hpp`: Contains the SymbolTable class for managing the symbol table during code generation.
+  - `syntax_tree.cpp/hpp`: Defines the SyntaxTreeNode class and its generateCode() method for generating MIPS assembly code.
+- `parser`: Contains the parser implementation, which builds the parsing table and parses the tokens.
+  - `configuration.cpp/h`: Contains the Configuration class and ConfigurationSet class, representing a configuration (production rule plus dot; a configuration set is a state) in the parsing process.
+  - `grammar.cpp/h`: Contains the Grammar class, which defines the grammar (production) rules for the parser, the semantic routines that trigger the code gen process are also attached to the production rules.
+  - `parser.cpp/h`: Contains the Parser class, which is responsible for building the parsing table and parsing the tokens.
+  - `production.cpp/h`: Contains the Production class, which is an abstraction for a production rule in the grammar.
+  - `symbol.cpp/h`: Contains the Symbol class, which represents a grammar symbol.
+- `scanner_src`: Contains the scanner implementation, which is responsible for scanning the input C code and converting it into tokens.
+  - `dfa.cpp/hpp`: Contains the DFA class, which represents a deterministic finite automaton.
+  - `nfa.cpp/hpp`: Contains the NFA class, which represents a nondeterministic finite automaton.
+  - `scanner.cpp/hpp`: Contains the Scanner class, which implements the main scanning functionality, which utilizes nfa for regular expression matching
+
+## Building the Compiler
+
+To build the compiler, simply run `make` in the root directory of the project:
+
+```
+make
 ```
 
-1. **Handling Array Access and Variable Declaration**: The compiler handles array access and variable declaration, including static arrays. When the parser encounters an array access or a variable declaration, it generates the appropriate code and updates the symbol table accordingly.
+This will generate the `compiler` executable in the project root.
 
+## Usage
 
-4. **Control Statements**: The compiler supports control statements such as `while`, `do-while`, and `if-else`. The parser generates the appropriate code for these constructs during the parsing process. The code generation for control statements involves creating and managing labels, generating code for conditions and branches, and ensuring that the control flow is correctly implemented.
+To compile a C source file, run the following command:
 
-5. **Function Call and Return Statement**: The compiler also supports return statements. The `return` statement is used to terminate the program. The code generation for the return statement involves generating a jump instruction to the end of the program.
+```bash
+./compiler  <  input_file.c  >  output_file.asm
+```
 
+This will generate a MIPS assembly file `output_file.asm` from the C source file `input_file.c`.
 
+You can then run the MIPS assembly code using a MIPS simulator, such as [SPIM](http://spimsimulator.sourceforge.net/) or [MARS](http://courses.missouristate.edu/kenvollmar/mars/).
 
-The steps mentioned above outline the main components of the code generation process in the simplified C compiler. By utilizing the scanner, parser, and ASTGen classes, the compiler can effectively generate MIPS code from the input source code, taking into account different language constructs such as variable declarations, array access, control statements, and function calls.
+## Limitations
+
+- The compiler currently only supports a single `main` function with no parameters and no return value.
+- No support for pointers, structures, or other advanced C language features.
+- No optimization is performed on the generated assembly code.
+
+## Contributing
+
+Contributions are welcome! If you find any bugs, have suggestions for new features, or would like to help improve the project, please feel free to open an issue or create a pull request.
