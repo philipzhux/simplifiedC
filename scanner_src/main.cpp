@@ -16,7 +16,7 @@ int main()
     {
         for(auto &t: lex.matchedTokens)
         {
-             std::cout<<"Token: "<<TokenMapper::token_to_string[t]<<std::endl;
+             std::cout<<t.matchedString<<": "<<TokenMapper::token_to_string[t.token]<<std::endl;
         }
        
     }

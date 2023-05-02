@@ -1,9 +1,8 @@
 #include "grammar.h"
+#include "ast/code.hpp"
 #include <stdexcept>
 
-
-
-size_t grammar::buildGrammar(std::string path)
+Parser grammar::buildGrammar()
 {
     Terminal _$("$", $, Symbol::getId());
     Terminal _int("INT", INT, Symbol::getId());
@@ -115,121 +114,513 @@ size_t grammar::buildGrammar(std::string path)
     NonTerminal _exp10("exp10", Symbol::getId());
     NonTerminal _exp11("exp11", Symbol::getId());
 
+    ASTGen::Code code;
     // initialize parser with augmented grammar
     Parser parser(_sPrime, {_program}, _$);
 
     // add production rules according to the grammars
 
     // variable declarations
-    parser.addProduction(_program, {_var_declarations, _statements});
-    parser.addProduction(_var_declarations, {_var_declarations, _var_declaration});
-    parser.addProduction(_var_declarations, {});
+    parser.addProduction(_program, {_var_declarations, _statements},
+                         [&](std::vector<std::shared_ptr<ASTGen::SyntaxTreeNode>> rhsNodes) -> std::shared_ptr<ASTGen::SyntaxTreeNode>
+                         {
+                            auto mainFunction = std::make_shared<ASTGen::SyntaxTreeNode>(ASTGen::FUNCTION);
+                            for (auto &node : rhsNodes)
+                            {
+                                if(node==nullptr)
+                                    continue;
+
+                                mainFunction->addChild(node);
+                            }
+                         });
+    parser.addProduction(_var_declarations, {_var_declarations, _var_declaration},
+                         [&](std::vector<std::shared_ptr<ASTGen::SyntaxTreeNode>> rhsNodes) -> std::shared_ptr<ASTGen::SyntaxTreeNode>
+                         {
+                             return nullptr;
+                         });
+    parser.addProduction(_var_declarations, {},
+                         [&](std::vector<std::shared_ptr<ASTGen::SyntaxTreeNode>> rhsNodes) -> std::shared_ptr<ASTGen::SyntaxTreeNode>
+                         {
+                             return nullptr;
+                         });
 
     // variable declaration
-    parser.addProduction(_var_declaration, {_int, _declaration_list, _semi});
+    parser.addProduction(_var_declaration, {_int, _declaration_list, _semi},
+                         [&](std::vector<std::shared_ptr<ASTGen::SyntaxTreeNode>> rhsNodes) -> std::shared_ptr<ASTGen::SyntaxTreeNode>
+                         {
+                             return nullptr;
+                         });
 
     // declaration list
-    parser.addProduction(_declaration_list, {_declaration_list, _comma, _declaration});
-    parser.addProduction(_declaration_list, {_declaration});
+    parser.addProduction(_declaration_list, {_declaration_list, _comma, _declaration},
+                         [&](std::vector<std::shared_ptr<ASTGen::SyntaxTreeNode>> rhsNodes) -> std::shared_ptr<ASTGen::SyntaxTreeNode>
+                         {
+                             return nullptr;
+                         });
+    parser.addProduction(_declaration_list, {_declaration},
+                         [&](std::vector<std::shared_ptr<ASTGen::SyntaxTreeNode>> rhsNodes) -> std::shared_ptr<ASTGen::SyntaxTreeNode>
+                         {
+                            return nullptr;
+                         });
 
     // declaration
-    parser.addProduction(_declaration, {_id, _assign, _int_num});
-    parser.addProduction(_declaration, {_id, _lsquare, _int_num, _rsquare});
-    parser.addProduction(_declaration, {_id});
+    parser.addProduction(_declaration, {_id, _assign, _int_num},
+                         [&](std::vector<std::shared_ptr<ASTGen::SyntaxTreeNode>> rhsNodes) -> std::shared_ptr<ASTGen::SyntaxTreeNode>
+                         {
+                            auto sym = code.symbolTable.declareSymbol(rhsNodes[0]->id);
+                            code.int2Reg(rhsNodes[2]->intVal, ASTGen::Register("$t1"););
+                            code.reg2Sym(ASTGen::Register("$t1"), sym);
+                            return nullptr;
+                         });
+    parser.addProduction(_declaration, {_id, _lsquare, _int_num, _rsquare},
+                         [&](std::vector<std::shared_ptr<ASTGen::SyntaxTreeNode>> rhsNodes) -> std::shared_ptr<ASTGen::SyntaxTreeNode>
+                         {
+                             code.symbolTable.declareSymbol(rhsNodes[0]->id, rhsNodes[2]->intVal * 4);
+                             return nullptr;
+                         });
+    parser.addProduction(_declaration, {_id},
+                         [&](std::vector<std::shared_ptr<ASTGen::SyntaxTreeNode>> rhsNodes) -> std::shared_ptr<ASTGen::SyntaxTreeNode>
+                         {
+                             code.symbolTable.declareSymbol(rhsNodes[0]->id);
+                             return nullptr;
+                         });
 
     // code block
-    parser.addProduction(_code_block, {_statement});
-    parser.addProduction(_code_block, {_lbrace, _statements, _rbrace});
+    parser.addProduction(_code_block, {_statement},
+                         [&](std::vector<std::shared_ptr<ASTGen::SyntaxTreeNode>> rhsNodes) -> std::shared_ptr<ASTGen::SyntaxTreeNode>
+                         {
+                             return rhsNodes[0];
+                         });
+    parser.addProduction(_code_block, {_lbrace, _statements, _rbrace},
+                         [&](std::vector<std::shared_ptr<ASTGen::SyntaxTreeNode>> rhsNodes) -> std::shared_ptr<ASTGen::SyntaxTreeNode>
+                         {
+                             return rhsNodes[1];
+                         });
 
     // statements
-    parser.addProduction(_statements, {_statements, _statement});
-    parser.addProduction(_statements, {_statement});
+    parser.addProduction(_statements, {_statements, _statement},
+                         [&](std::vector<std::shared_ptr<ASTGen::SyntaxTreeNode>> rhsNodes) -> std::shared_ptr<ASTGen::SyntaxTreeNode>
+                         {
+                             rhsNodes[0]->addChild(rhsNodes[1]);
+                             return rhsNodes[0];
+                         });
+    parser.addProduction(_statements, {_statement},
+                         [&](std::vector<std::shared_ptr<ASTGen::SyntaxTreeNode>> rhsNodes) -> std::shared_ptr<ASTGen::SyntaxTreeNode>
+                         {
+                             auto newNode = std::make_shared<ASTGen::SyntaxTreeNode>(ASTGen::COMPOSITE);
+                             newNode->addChild(rhsNodes[0]);
+                             return newNode;
+                         });
 
-    parser.addProduction(_statement, {_assign_statement, _semi});
-    parser.addProduction(_statement, {_control_statement});
-    parser.addProduction(_statement, {_read_write_statement, _semi});
-    parser.addProduction(_statement, {_semi});
+    parser.addProduction(_statement, {_assign_statement, _semi},
+                         [&](std::vector<std::shared_ptr<ASTGen::SyntaxTreeNode>> rhsNodes) -> std::shared_ptr<ASTGen::SyntaxTreeNode>
+                         {
+                             return rhsNodes[0];
+                         });
+    parser.addProduction(_statement, {_control_statement},
+                         [&](std::vector<std::shared_ptr<ASTGen::SyntaxTreeNode>> rhsNodes) -> std::shared_ptr<ASTGen::SyntaxTreeNode>
+                         {
+                             return rhsNodes[0];
+                         });
+    parser.addProduction(_statement, {_read_write_statement, _semi},
+                         [&](std::vector<std::shared_ptr<ASTGen::SyntaxTreeNode>> rhsNodes) -> std::shared_ptr<ASTGen::SyntaxTreeNode>
+                         {
+                             return rhsNodes[0];
+                         });
+    parser.addProduction(_statement, {_semi},
+                         [&](std::vector<std::shared_ptr<ASTGen::SyntaxTreeNode>> rhsNodes) -> std::shared_ptr<ASTGen::SyntaxTreeNode>
+                         {
+                             return rhsNodes[0];
+                         });
 
     // control statement
-    parser.addProduction(_control_statement, {_if_statement});
-    parser.addProduction(_control_statement, {_while_statement});
-    parser.addProduction(_control_statement, {_do_while_statement, _semi});
-    parser.addProduction(_control_statement, {_return_statement, _semi});
+    parser.addProduction(_control_statement, {_if_statement},
+                         [&](std::vector<std::shared_ptr<ASTGen::SyntaxTreeNode>> rhsNodes) -> std::shared_ptr<ASTGen::SyntaxTreeNode>
+                         {
+                             return rhsNodes[0];
+                         });
+    parser.addProduction(_control_statement, {_while_statement},
+                         [&](std::vector<std::shared_ptr<ASTGen::SyntaxTreeNode>> rhsNodes) -> std::shared_ptr<ASTGen::SyntaxTreeNode>
+                         {
+                             return rhsNodes[0];
+                         });
+    parser.addProduction(_control_statement, {_do_while_statement, _semi},
+                         [&](std::vector<std::shared_ptr<ASTGen::SyntaxTreeNode>> rhsNodes) -> std::shared_ptr<ASTGen::SyntaxTreeNode>
+                         {
+                             return rhsNodes[0];
+                         });
+    parser.addProduction(_control_statement, {_return_statement, _semi},
+                         [&](std::vector<std::shared_ptr<ASTGen::SyntaxTreeNode>> rhsNodes) -> std::shared_ptr<ASTGen::SyntaxTreeNode>
+                         {
+                             return rhsNodes[0];
+                         });
 
     // read write statement
-    parser.addProduction(_read_write_statement, {_read_statement});
-    parser.addProduction(_read_write_statement, {_write_statement});
+    parser.addProduction(_read_write_statement, {_read_statement},
+                         [&](std::vector<std::shared_ptr<ASTGen::SyntaxTreeNode>> rhsNodes) -> std::shared_ptr<ASTGen::SyntaxTreeNode>
+                         {
+                             return rhsNodes[0];
+                         });
+    parser.addProduction(_read_write_statement, {_write_statement},
+                         [&](std::vector<std::shared_ptr<ASTGen::SyntaxTreeNode>> rhsNodes) -> std::shared_ptr<ASTGen::SyntaxTreeNode>
+                         {
+                             return rhsNodes[0];
+                         });
 
     // assign statement
-    parser.addProduction(_assign_statement, {_id, _lsquare, _exp, _rsquare, _assign, _exp});
-    parser.addProduction(_assign_statement, {_id, _assign, _exp});
-    
+    parser.addProduction(_assign_statement, {_id, _lsquare, _exp, _rsquare, _assign, _exp},
+                         [&](std::vector<std::shared_ptr<ASTGen::SyntaxTreeNode>> rhsNodes) -> std::shared_ptr<ASTGen::SyntaxTreeNode>
+                         {
+                             auto arrayAccessNode = std::make_shared<ASTGen::SyntaxTreeNode>(ASTGen::ARRAY_ACCESS);
+                             arrayAccessNode->children.push_back(rhsNodes[0]);
+                             arrayAccessNode->children.push_back(rhsNodes[2]);
+                             auto assignNode = std::make_shared<ASTGen::SyntaxTreeNode>(ASTGen::ASSIGN_STATEMENT);
+                             assignNode->children.push_back(arrayAccessNode);
+                             assignNode->children.push_back(rhsNodes[5]);
+                             return assignNode;
+                         });
+    parser.addProduction(_assign_statement, {_id, _assign, _exp},
+                         [&](std::vector<std::shared_ptr<ASTGen::SyntaxTreeNode>> rhsNodes) -> std::shared_ptr<ASTGen::SyntaxTreeNode>
+                         {
+                             auto node = std::make_shared<ASTGen::SyntaxTreeNode>(ASTGen::ASSIGN_STATEMENT);
+                             node->children.push_back(rhsNodes[0]);
+                             node->children.push_back(rhsNodes[2]);
+                             return node;
+                         });
+
     // if statement
-    parser.addProduction(_if_statement, {_if_stmt});
-    parser.addProduction(_if_statement, {_if_stmt, _else, _code_block});
+    parser.addProduction(_if_statement, {_if_stmt},
+                         [&](std::vector<std::shared_ptr<ASTGen::SyntaxTreeNode>> rhsNodes) -> std::shared_ptr<ASTGen::SyntaxTreeNode>
+                         {
+                             return rhsNodes[0];
+                         });
+    parser.addProduction(_if_statement, {_if_stmt, _else, _code_block},
+                         [&](std::vector<std::shared_ptr<ASTGen::SyntaxTreeNode>> rhsNodes) -> std::shared_ptr<ASTGen::SyntaxTreeNode>
+                         {
+                             // code according to syntax_tree.cpp now
+                             rhsNodes[0]->children.push_back(rhsNodes[2]); // add else code block to if statement node
+                             return rhsNodes[0];
+                         });
     // if_stmt
-    parser.addProduction(_if_stmt, {_if, _lpar, _exp, _rpar, _code_block});
-    parser.addProduction(_while_statement, {_while, _lpar, _exp, _rpar, _code_block});
+    parser.addProduction(_if_stmt, {_if, _lpar, _exp, _rpar, _code_block},
+                         [&](std::vector<std::shared_ptr<ASTGen::SyntaxTreeNode>> rhsNodes) -> std::shared_ptr<ASTGen::SyntaxTreeNode>
+                         {
+                             auto newNode = std::make_shared<ASTGen::SyntaxTreeNode>(ASTGen::IF_STATEMENT);
+                             newNode->children.push_back(rhsNodes[2]); // condition exp
+                             newNode->children.push_back(rhsNodes[4]); // code block
+                             return newNode;
+                         });
+    parser.addProduction(_while_statement, {_while, _lpar, _exp, _rpar, _code_block},
+                         [&](std::vector<std::shared_ptr<ASTGen::SyntaxTreeNode>> rhsNodes) -> std::shared_ptr<ASTGen::SyntaxTreeNode>
+                         {
+                             auto newNode = std::make_shared<ASTGen::SyntaxTreeNode>(ASTGen::WHILE_STATEMENT);
+                             newNode->children.push_back(rhsNodes[2]); // condition exp
+                             newNode->children.push_back(rhsNodes[4]); // code block
+                             return newNode;
+                         });
     // do while statement
-    parser.addProduction(_do_while_statement, {_do, _code_block, _while, _lpar, _exp, _rpar});
+    parser.addProduction(_do_while_statement, {_do, _code_block, _while, _lpar, _exp, _rpar},
+                         [&](std::vector<std::shared_ptr<ASTGen::SyntaxTreeNode>> rhsNodes) -> std::shared_ptr<ASTGen::SyntaxTreeNode>
+                         {
+                             auto newNode = std::make_shared<ASTGen::SyntaxTreeNode>(ASTGen::DO_WHILE_STATEMENT);
+                             newNode->children.push_back(rhsNodes[1]); // code block
+                             newNode->children.push_back(rhsNodes[4]); // condition exp
+                             return newNode;
+                         });
     // return statement
-    parser.addProduction(_return_statement, {_return});
+    parser.addProduction(_return_statement, {_return},
+                         [&](std::vector<std::shared_ptr<ASTGen::SyntaxTreeNode>> rhsNodes) -> std::shared_ptr<ASTGen::SyntaxTreeNode>
+                         {
+                             auto newNode = std::make_shared<ASTGen::SyntaxTreeNode>(ASTGen::RETURN_STATEMENT);
+                         });
     // read statement
-    parser.addProduction(_read_statement, {_read, _lpar, _id, _rpar});
+    parser.addProduction(_read_statement, {_read, _lpar, _id, _rpar},
+                         [&](std::vector<std::shared_ptr<ASTGen::SyntaxTreeNode>> rhsNodes) -> std::shared_ptr<ASTGen::SyntaxTreeNode>
+                         {
+                             auto newNode = std::make_shared<ASTGen::SyntaxTreeNode>(ASTGen::READ_STATEMENT);
+                             newNode->children.push_back(rhsNodes[2]);
+                             return newNode;
+                         });
     // write statement
-    parser.addProduction(_write_statement, {_write, _lpar, _exp, _rpar});
+    parser.addProduction(_write_statement, {_write, _lpar, _exp, _rpar},
+                         [&](std::vector<std::shared_ptr<ASTGen::SyntaxTreeNode>> rhsNodes) -> std::shared_ptr<ASTGen::SyntaxTreeNode>
+                         {
+                             auto newNode = std::make_shared<ASTGen::SyntaxTreeNode>(ASTGen::WRITE_STATEMENT);
+                             newNode->children.push_back(rhsNodes[2]);
+                             return newNode;
+                         });
 
     // expressions (precedence climbing)
-    parser.addProduction(_exp, {_exp1});
-    parser.addProduction(_exp1, {_exp1, _oror, _exp2});
-    parser.addProduction(_exp1, {_exp2});
-    parser.addProduction(_exp2, {_exp2, _andand, _exp3});
-    parser.addProduction(_exp2, {_exp3});
-    parser.addProduction(_exp3, {_exp3, _or_op, _exp4});
-    parser.addProduction(_exp3, {_exp4});
-    parser.addProduction(_exp4, {_exp4, _and_op, _exp5});
-    parser.addProduction(_exp4, {_exp5});
-    parser.addProduction(_exp5, {_exp5, _eq, _exp6});
-    parser.addProduction(_exp5, {_exp5, _noteq, _exp6});
-    parser.addProduction(_exp5, {_exp6});
-    parser.addProduction(_exp6, {_exp6, _lt, _exp7});
-    parser.addProduction(_exp6, {_exp6, _gt, _exp7});
-    parser.addProduction(_exp6, {_exp6, _lteq, _exp7});
-    parser.addProduction(_exp6, {_exp6, _gteq, _exp7});
-    parser.addProduction(_exp6, {_exp7});
-    parser.addProduction(_exp7, {_exp7, _shl_op, _exp8});
-    parser.addProduction(_exp7, {_exp7, _shr_op, _exp8});
-    parser.addProduction(_exp7, {_exp8});
-    parser.addProduction(_exp8, {_exp8, _plus, _exp9});
-    parser.addProduction(_exp8, {_exp8, _minus, _exp9});
-    parser.addProduction(_exp8, {_exp9});
-    parser.addProduction(_exp9, {_exp9, _mul_op, _exp10});
-    parser.addProduction(_exp9, {_exp9, _div_op, _exp10});
-    parser.addProduction(_exp9, {_exp10});
-    parser.addProduction(_exp10, {_not_op, _exp11});
-    parser.addProduction(_exp10, {_minus, _exp11});
-    parser.addProduction(_exp10, {_exp11});
-    parser.addProduction(_exp11, {_id, _lsquare, _exp, _rsquare});
-    parser.addProduction(_exp11, {_int_num});
-    parser.addProduction(_exp11, {_id});
-    parser.addProduction(_exp11, {_lpar, _exp, _rpar});
+    parser.addProduction(_exp, {_exp1},
+                         [&](std::vector<std::shared_ptr<ASTGen::SyntaxTreeNode>> rhsNodes) -> std::shared_ptr<ASTGen::SyntaxTreeNode>
+                         {
+                             return rhsNodes[0];
+                         });
+    parser.addProduction(_exp1, {_exp1, _oror, _exp2},
+                         [&](std::vector<std::shared_ptr<ASTGen::SyntaxTreeNode>> rhsNodes) -> std::shared_ptr<ASTGen::SyntaxTreeNode>
+                         {
+                             auto newNode = std::make_shared<ASTGen::SyntaxTreeNode>(ASTGen::EXPRESSION, "oror");
+                             newNode->addChild(rhsNodes[0]);
+                             newNode->addChild(rhsNodes[2]);
+                             return newNode;
+                         });
+    parser.addProduction(_exp1, {_exp2},
+                         [&](std::vector<std::shared_ptr<ASTGen::SyntaxTreeNode>> rhsNodes) -> std::shared_ptr<ASTGen::SyntaxTreeNode>
+                         {
+                             return rhsNodes[0];
+                         });
+    parser.addProduction(_exp2, {_exp2, _andand, _exp3},
+                         [&](std::vector<std::shared_ptr<ASTGen::SyntaxTreeNode>> rhsNodes) -> std::shared_ptr<ASTGen::SyntaxTreeNode>
+                         {
+                             auto newNode = std::make_shared<ASTGen::SyntaxTreeNode>(ASTGen::EXPRESSION, "andand");
+                             newNode->addChild(rhsNodes[0]);
+                             newNode->addChild(rhsNodes[2]);
+                             return newNode;
+                         });
+    parser.addProduction(_exp2, {_exp3},
+                         [&](std::vector<std::shared_ptr<ASTGen::SyntaxTreeNode>> rhsNodes) -> std::shared_ptr<ASTGen::SyntaxTreeNode>
+                         {
+                             return rhsNodes[0];
+                         });
+    parser.addProduction(_exp3, {_exp3, _or_op, _exp4},
+                         [&](std::vector<std::shared_ptr<ASTGen::SyntaxTreeNode>> rhsNodes) -> std::shared_ptr<ASTGen::SyntaxTreeNode>
+                         {
+                             auto newNode = std::make_shared<ASTGen::SyntaxTreeNode>(ASTGen::EXPRESSION, "or");
+                             newNode->addChild(rhsNodes[0]);
+                             newNode->addChild(rhsNodes[2]);
+                             return newNode;
+                         });
+    parser.addProduction(_exp3, {_exp4},
+                         [&](std::vector<std::shared_ptr<ASTGen::SyntaxTreeNode>> rhsNodes) -> std::shared_ptr<ASTGen::SyntaxTreeNode>
+                         {
+                             return rhsNodes[0];
+                         });
+    parser.addProduction(_exp4, {_exp4, _and_op, _exp5},
+                         [&](std::vector<std::shared_ptr<ASTGen::SyntaxTreeNode>> rhsNodes) -> std::shared_ptr<ASTGen::SyntaxTreeNode>
+                         {
+                             auto newNode = std::make_shared<ASTGen::SyntaxTreeNode>(ASTGen::EXPRESSION, "and");
+                             newNode->addChild(rhsNodes[0]);
+                             newNode->addChild(rhsNodes[2]);
+                             return newNode;
+                         });
+    parser.addProduction(_exp4, {_exp5},
+                         [&](std::vector<std::shared_ptr<ASTGen::SyntaxTreeNode>> rhsNodes) -> std::shared_ptr<ASTGen::SyntaxTreeNode>
+                         {
+                             return rhsNodes[0];
+                         });
+    parser.addProduction(_exp5, {_exp5, _eq, _exp6},
+                         [&](std::vector<std::shared_ptr<ASTGen::SyntaxTreeNode>> rhsNodes) -> std::shared_ptr<ASTGen::SyntaxTreeNode>
+                         {
+                             auto newNode = std::make_shared<ASTGen::SyntaxTreeNode>(ASTGen::EXPRESSION, "eq");
+                             newNode->addChild(rhsNodes[0]);
+                             newNode->addChild(rhsNodes[2]);
+                             return newNode;
+                         });
+    parser.addProduction(_exp5, {_exp5, _noteq, _exp6},
+                         [&](std::vector<std::shared_ptr<ASTGen::SyntaxTreeNode>> rhsNodes) -> std::shared_ptr<ASTGen::SyntaxTreeNode>
+                         {
+                             auto newNode = std::make_shared<ASTGen::SyntaxTreeNode>(ASTGen::EXPRESSION, "xor");
+                             newNode->addChild(rhsNodes[0]);
+                             newNode->addChild(rhsNodes[2]);
+                             return newNode;
+                         });
+    parser.addProduction(_exp5, {_exp6},
+                         [&](std::vector<std::shared_ptr<ASTGen::SyntaxTreeNode>> rhsNodes) -> std::shared_ptr<ASTGen::SyntaxTreeNode>
+                         {
+                             return rhsNodes[0];
+                         });
+    parser.addProduction(_exp6, {_exp6, _lt, _exp7},
+                         [&](std::vector<std::shared_ptr<ASTGen::SyntaxTreeNode>> rhsNodes) -> std::shared_ptr<ASTGen::SyntaxTreeNode>
+                         {
+                             auto newNode = std::make_shared<ASTGen::SyntaxTreeNode>(ASTGen::EXPRESSION, "lt");
+                             newNode->addChild(rhsNodes[0]);
+                             newNode->addChild(rhsNodes[2]);
+                             return newNode;
+                         });
+    parser.addProduction(_exp6, {_exp6, _gt, _exp7},
+                         [&](std::vector<std::shared_ptr<ASTGen::SyntaxTreeNode>> rhsNodes) -> std::shared_ptr<ASTGen::SyntaxTreeNode>
+                         {
+                             auto newNode = std::make_shared<ASTGen::SyntaxTreeNode>(ASTGen::EXPRESSION, "gt");
+                             newNode->addChild(rhsNodes[0]);
+                             newNode->addChild(rhsNodes[2]);
+                             return newNode;
+                         });
+    parser.addProduction(_exp6, {_exp6, _lteq, _exp7},
+                         [&](std::vector<std::shared_ptr<ASTGen::SyntaxTreeNode>> rhsNodes) -> std::shared_ptr<ASTGen::SyntaxTreeNode>
+                         {
+                             auto newNode = std::make_shared<ASTGen::SyntaxTreeNode>(ASTGen::EXPRESSION, "lte");
+                             newNode->addChild(rhsNodes[0]);
+                             newNode->addChild(rhsNodes[2]);
+                             return newNode;
+                         });
+    parser.addProduction(_exp6, {_exp6, _gteq, _exp7},
+                         [&](std::vector<std::shared_ptr<ASTGen::SyntaxTreeNode>> rhsNodes) -> std::shared_ptr<ASTGen::SyntaxTreeNode>
+                         {
+                             auto newNode = std::make_shared<ASTGen::SyntaxTreeNode>(ASTGen::EXPRESSION, "gte");
+                             newNode->addChild(rhsNodes[0]);
+                             newNode->addChild(rhsNodes[2]);
+                             return newNode;
+                         });
+    parser.addProduction(_exp6, {_exp7},
+                         [&](std::vector<std::shared_ptr<ASTGen::SyntaxTreeNode>> rhsNodes) -> std::shared_ptr<ASTGen::SyntaxTreeNode>
+                         {
+                             return rhsNodes[0];
+                         });
+    parser.addProduction(_exp7, {_exp7, _shl_op, _exp8},
+                         [&](std::vector<std::shared_ptr<ASTGen::SyntaxTreeNode>> rhsNodes) -> std::shared_ptr<ASTGen::SyntaxTreeNode>
+                         {
+                             auto newNode = std::make_shared<ASTGen::SyntaxTreeNode>(ASTGen::EXPRESSION, "sllv");
+                             newNode->addChild(rhsNodes[0]);
+                             newNode->addChild(rhsNodes[2]);
+                             return newNode;
+                         });
+    parser.addProduction(_exp7, {_exp7, _shr_op, _exp8},
+                         [&](std::vector<std::shared_ptr<ASTGen::SyntaxTreeNode>> rhsNodes) -> std::shared_ptr<ASTGen::SyntaxTreeNode>
+                         {
+                             auto newNode = std::make_shared<ASTGen::SyntaxTreeNode>(ASTGen::EXPRESSION, "srav");
+                             newNode->addChild(rhsNodes[0]);
+                             newNode->addChild(rhsNodes[2]);
+                             return newNode;
+                         });
+    parser.addProduction(_exp7, {_exp8},
+                         [&](std::vector<std::shared_ptr<ASTGen::SyntaxTreeNode>> rhsNodes) -> std::shared_ptr<ASTGen::SyntaxTreeNode>
+                         {
+                             return rhsNodes[0];
+                         });
+    parser.addProduction(_exp8, {_exp8, _plus, _exp9},
+                         [&](std::vector<std::shared_ptr<ASTGen::SyntaxTreeNode>> rhsNodes) -> std::shared_ptr<ASTGen::SyntaxTreeNode>
+                         {
+                             auto newNode = std::make_shared<ASTGen::SyntaxTreeNode>(ASTGen::EXPRESSION, "add");
+                             newNode->addChild(rhsNodes[0]);
+                             newNode->addChild(rhsNodes[2]);
+                             return newNode;
+                         });
+    parser.addProduction(_exp8, {_exp8, _minus, _exp9},
+                         [&](std::vector<std::shared_ptr<ASTGen::SyntaxTreeNode>> rhsNodes) -> std::shared_ptr<ASTGen::SyntaxTreeNode>
+                         {
+                             auto newNode = std::make_shared<ASTGen::SyntaxTreeNode>(ASTGen::EXPRESSION, "sub");
+                             newNode->addChild(rhsNodes[0]);
+                             newNode->addChild(rhsNodes[2]);
+                             return newNode;
+                         });
+    parser.addProduction(_exp8, {_exp9},
+                         [&](std::vector<std::shared_ptr<ASTGen::SyntaxTreeNode>> rhsNodes) -> std::shared_ptr<ASTGen::SyntaxTreeNode>
+                         {
+                             return rhsNodes[0];
+                         });
+    parser.addProduction(_exp9, {_exp9, _mul_op, _exp10},
+                         [&](std::vector<std::shared_ptr<ASTGen::SyntaxTreeNode>> rhsNodes) -> std::shared_ptr<ASTGen::SyntaxTreeNode>
+                         {
+                             auto newNode = std::make_shared<ASTGen::SyntaxTreeNode>(ASTGen::EXPRESSION, "mul");
+                             newNode->addChild(rhsNodes[0]);
+                             newNode->addChild(rhsNodes[2]);
+                             return newNode;
+                         });
+    parser.addProduction(_exp9, {_exp9, _div_op, _exp10},
+                         [&](std::vector<std::shared_ptr<ASTGen::SyntaxTreeNode>> rhsNodes) -> std::shared_ptr<ASTGen::SyntaxTreeNode>
+                         {
+                             auto newNode = std::make_shared<ASTGen::SyntaxTreeNode>(ASTGen::EXPRESSION, "div");
+                             newNode->addChild(rhsNodes[0]);
+                             newNode->addChild(rhsNodes[2]);
+                             return newNode;
+                         });
+    parser.addProduction(_exp9, {_exp10},
+                         [&](std::vector<std::shared_ptr<ASTGen::SyntaxTreeNode>> rhsNodes) -> std::shared_ptr<ASTGen::SyntaxTreeNode>
+                         {
+                             return rhsNodes[0];
+                         });
+    parser.addProduction(_exp10, {_not_op, _exp11},
+                         [&](std::vector<std::shared_ptr<ASTGen::SyntaxTreeNode>> rhsNodes) -> std::shared_ptr<ASTGen::SyntaxTreeNode>
+                         {
+                             auto newNode = std::make_shared<ASTGen::SyntaxTreeNode>(ASTGen::UNARY_EXPRESSION, "not");
+                             newNode->addChild(rhsNodes[1]);
+                         });
+    parser.addProduction(_exp10, {_minus, _exp11},
+                         [&](std::vector<std::shared_ptr<ASTGen::SyntaxTreeNode>> rhsNodes) -> std::shared_ptr<ASTGen::SyntaxTreeNode>
+                         {
+                             // neg is pseudo-instruction for unary subtraction
+                             auto newNode = std::make_shared<ASTGen::SyntaxTreeNode>(ASTGen::UNARY_EXPRESSION, "neg");
+                             newNode->addChild(rhsNodes[1]);
+                         });
+    parser.addProduction(_exp10, {_exp11},
+                         [&](std::vector<std::shared_ptr<ASTGen::SyntaxTreeNode>> rhsNodes) -> std::shared_ptr<ASTGen::SyntaxTreeNode>
+                         {
+                             return rhsNodes[0];
+                         });
+    parser.addProduction(_exp11, {_id, _lsquare, _exp, _rsquare},
+                         [&](std::vector<std::shared_ptr<ASTGen::SyntaxTreeNode>> rhsNodes) -> std::shared_ptr<ASTGen::SyntaxTreeNode>
+                         {
+                             auto newNode = std::make_shared<ASTGen::SyntaxTreeNode>(ASTGen::ARRAY_ACCESS);
+                             newNode->addChild(rhsNodes[0]); // array name
+                             newNode->addChild(rhsNodes[2]); // index
+                         });
+    parser.addProduction(_exp11, {_int_num},
+                         [&](std::vector<std::shared_ptr<ASTGen::SyntaxTreeNode>> rhsNodes) -> std::shared_ptr<ASTGen::SyntaxTreeNode>
+                         {
+                             return rhsNodes[0];
+                         });
+    parser.addProduction(_exp11, {_id},
+                         [&](std::vector<std::shared_ptr<ASTGen::SyntaxTreeNode>> rhsNodes) -> std::shared_ptr<ASTGen::SyntaxTreeNode>
+                         {
+                             return rhsNodes[0];
+                         });
+    parser.addProduction(_exp11, {_lpar, _exp, _rpar},
+                         [&](std::vector<std::shared_ptr<ASTGen::SyntaxTreeNode>> rhsNodes) -> std::shared_ptr<ASTGen::SyntaxTreeNode>
+                         {
+                             return rhsNodes[1];
+                         });
 
+    return parser;
 
-    
-    parser.build();
-
-    
-    std::ofstream file(path);
-    cereal::XMLOutputArchive archive(file);
-    archive(CEREAL_NVP(parser), CEREAL_NVP(tokenToTerminal));
-    return parser.configurationSets.size();
+    // std::ofstream file(path);
+    // cereal::XMLOutputArchive archive(file);
+    // archive(CEREAL_NVP(parser), CEREAL_NVP(tokenToTerminal));
+    // return parser.configurationSets.size();
 }
 
 parserWrapper::parserWrapper(std::string parserStatePath)
 {
-    std::ifstream is(parserStatePath);
-    if(!is.good())
-        throw std::runtime_error("Cannot open parser state file: " + parserStatePath);
-    cereal::XMLInputArchive archive(is);
-    archive(parser, tokenToTerminal);
+    parser = ::grammar::buildGrammar();
+    tokenToTerminal = std::map<Token, Symbol> tokenToTerminal = {
+        {INT, _int},
+        {SEMI, _semi},
+        {COMMA, _comma},
+        {ASSIGN, _assign},
+        {ID, _id},
+        {LSQUARE, _lsquare},
+        {RSQUARE, _rsquare},
+        {LBRACE, _lbrace},
+        {RBRACE, _rbrace},
+        {IF, _if},
+        {ELSE, _else},
+        {WHILE, _while},
+        {DO, _do},
+        {RETURN, _return},
+        {READ, _read},
+        {WRITE, _write},
+        {OROR, _oror},
+        {ANDAND, _andand},
+        {OR_OP, _or_op},
+        {AND_OP, _and_op},
+        {EQ, _eq},
+        {NOTEQ, _noteq},
+        {LT, _lt},
+        {GT, _gt},
+        {LTEQ, _lteq},
+        {GTEQ, _gteq},
+        {SHL_OP, _shl_op},
+        {SHR_OP, _shr_op},
+        {PLUS, _plus},
+        {MINUS, _minus},
+        {MUL_OP, _mul_op},
+        {DIV_OP, _div_op},
+        {NOT_OP, _not_op},
+        {INT_NUM, _int_num},
+        {LPAR, _lpar},
+        {RPAR, _rpar}};
+    // std::ifstream is(parserStatePath);
+    // if (!is.good())
+    //     throw std::runtime_error("Cannot open parser state file: " + parserStatePath);
+    // cereal::XMLInputArchive archive(is);
+    // archive(parser, tokenToTerminal);
 }

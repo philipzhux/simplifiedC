@@ -7,6 +7,8 @@
 #include <iterator>
 #include <sstream>
 
+MatchedToken::MatchedToken(Token token, std::string matchedString): token(token), matchedString(matchedString){}
+
 void Scanner::buildINT_NUM()
 {
     auto digitNFA = NFA("0123456789").selfRepeat();
@@ -50,8 +52,9 @@ void Scanner::buildSpecialSymbols()
 bool Scanner::test(std::string component, const std::vector<NFA> &selectedNFAs)
 {
     int nextUnmatchedIdx = 0;
+    int prevUnmatchedIdx = 0;
     Token latestMatchedToken = UNKNOWN;
-    std::vector<Token> tempMatched;
+    std::vector<MatchedToken> tempMatched;
     std::stack<std::tuple<StatePtr, int, std::unordered_set<StatePtr>>> stateStack;
 
     for (auto &nfa : selectedNFAs)
@@ -72,6 +75,7 @@ bool Scanner::test(std::string component, const std::vector<NFA> &selectedNFAs)
                 (nextIdx > nextUnmatchedIdx ||
                  (nextIdx == nextUnmatchedIdx && currState->token < latestMatchedToken)))
             {
+                
                 nextUnmatchedIdx = nextIdx;
                 latestMatchedToken = currState->token;
             }
@@ -99,11 +103,13 @@ bool Scanner::test(std::string component, const std::vector<NFA> &selectedNFAs)
         {
             return false;
         }
-        tempMatched.push_back(latestMatchedToken);
+        
+        tempMatched.push_back({latestMatchedToken, component.substr(prevUnmatchedIdx, nextUnmatchedIdx - prevUnmatchedIdx)});
         for (auto &nfa : selectedNFAs)
         {
             stateStack.push({nfa.startState, nextUnmatchedIdx, {}});
         }
+        prevUnmatchedIdx = nextUnmatchedIdx;
     }
     for (auto &t : tempMatched)
         matchedTokens.push_back(t);

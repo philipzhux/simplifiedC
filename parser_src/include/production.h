@@ -9,11 +9,12 @@ class Production
 {
 public:
     Production();
-    Production(Symbol lhs, std::vector<Symbol> rhs, int id);
+    Production(Symbol lhs, std::vector<Symbol> rhs, int id, std::function<std::shared_ptr<ASTGen::SyntaxTreeNode>(std::vector<std::shared_ptr<ASTGen::SyntaxTreeNode>>)> action);
     int id;
     Symbol lhs;
     std::vector<Symbol> rhs;
     bool operator==(const Production &other) const;
+    std::function<std::shared_ptr<ASTGen::SyntaxTreeNode>(std::vector<std::shared_ptr<ASTGen::SyntaxTreeNode>>)> action;
     static int getId();
 
     template<class Archive>

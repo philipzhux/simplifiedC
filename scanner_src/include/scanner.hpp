@@ -1,11 +1,20 @@
 #pragma once
 #include "nfa.hpp"
 
+class MatchedToken
+{
+    public:
+    Token token;
+    std::string matchedString;
+    MatchedToken(Token token, std::string matchedString);
+};
+
+
 class Scanner
 {
     public:
     Scanner(std::string);
-    std::vector<Token> matchedTokens;
+    std::vector<MatchedToken> matchedTokens;
     bool compile();
     private:
     bool test(std::string, const std::vector<NFA>& selectedNFAs);

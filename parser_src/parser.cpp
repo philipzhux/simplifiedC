@@ -5,7 +5,9 @@ Parser::Parser() {}
 
 Parser::Parser(Symbol startLhs, std::vector<Symbol> startRhs, Terminal endSymbol) : endSymbol(endSymbol)
 {
-    startProductionId = addProduction(startLhs, startRhs);
+    startProductionId = addProduction(startLhs, startRhs, [](std::vector<std::shared_ptr<ASTGen::SyntaxTreeNode>> children) -> std::shared_ptr<ASTGen::SyntaxTreeNode> {
+        return children[0];
+    });
     // augmented production should be the production 0
     // reduced by production 0 is the accept state
     assert(startProductionId == 0);
@@ -303,11 +305,12 @@ bool Parser::parse(std::vector<Symbol> input)
         else if (nextState < 0)
         {
             int production = -nextState;
-
+            std::vector<std::shared_ptr<ASTGen::SyntaxTreeNode>> rhsNodes;
             // pop series of states from the stack according to the rhs of the production
             for (size_t j = 0; j < productions[production]->rhs.size(); j++)
             {
                 stack.pop_back();
+                rhsNodes.insert(rhsNodes.begin(),symbolStack.back().syntaxTreeNode);
                 symbolStack.pop_back();
             }
 
@@ -325,9 +328,11 @@ bool Parser::parse(std::vector<Symbol> input)
 
             stack.push_back(nextState);
             symbolStack.push_back(productions[production]->lhs);
+            symbolStack[symbolStack.size()-1].syntaxTreeNode = productions[production]->action(rhsNodes);
+            
 
             /*
-            Sample shift message
+            Sample reduce message
             state: 49	next type: SEMI		reduce by grammar 9: declaration->ID
             current situation: INT | declaration
             */
@@ -373,9 +378,9 @@ bool Parser::parse(std::vector<Symbol> input)
 /// @param lhs the left hand side of the production
 /// @param rhs the right hand side of the production
 /// @return the id of the production
-int Parser::addProduction(Symbol lhs, std::vector<Symbol> rhs)
+int Parser::addProduction(Symbol lhs, std::vector<Symbol> rhs, std::function<std::shared_ptr<ASTGen::SyntaxTreeNode>(std::vector<std::shared_ptr<ASTGen::SyntaxTreeNode>>)> action)
 {
-    auto production = std::make_shared<Production>(lhs, rhs, productions.size());
+    auto production = std::make_shared<Production>(lhs, rhs, productions.size(), action);
     if (production->rhs.size() == 0)
     {
         nullableSymbols.insert(production->lhs.id);

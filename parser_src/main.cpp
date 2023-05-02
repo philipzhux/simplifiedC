@@ -14,13 +14,13 @@ inline bool exists_test(const std::string &name)
 int main(int argc, char **argv)
 {
     // argv is the path to the parser state file
-    if(argc != 2)
-    {
-        std::cout << "Usage: " << argv[0] << " <parser state file>" << std::endl;
-        return 1;
-    }
+    // if(argc != 2)
+    // {
+    //     std::cout << "Usage: " << argv[0] << " <parser state file>" << std::endl;
+    //     return 1;
+    // }
 
-    std::string parserStatePath = argv[1];
+    // std::string parserStatePath = argv[1];
 
     // if (!exists_test(parserStatePath))
     // {
@@ -29,31 +29,31 @@ int main(int argc, char **argv)
 
     {
         // parser scope
-        parserWrapper wrapper(parserStatePath);
+        parserWrapper wrapper("");
         std::vector<Symbol> symbols;
         
-        {
-            // scanner scope
-            std::string src = "";
-            for (std::string line; std::getline(std::cin, line);)
-            {
-                src += line + "\n";
-            }
-            Scanner lex(src);
-            if (!lex.compile())
-            {
-                std::cout << "Scanner Syntax Error" << std::endl;
-                exit(1);
-            }
+        // {
+        //     // scanner scope
+        //     std::string src = "";
+        //     for (std::string line; std::getline(std::cin, line);)
+        //     {
+        //         src += line + "\n";
+        //     }
+        //     Scanner lex(src);
+        //     if (!lex.compile())
+        //     {
+        //         std::cout << "Scanner Syntax Error" << std::endl;
+        //         exit(1);
+        //     }
 
             
-            for (auto &token : lex.matchedTokens)
-            {
-                symbols.push_back(wrapper.tokenToTerminal.at(token));
-            }
+        //     for (auto &token : lex.matchedTokens)
+        //     {
+        //         symbols.push_back(wrapper.tokenToTerminal.at(token));
+        //     }
             
-        }
+        // }
 
-        wrapper.parser.parse(symbols);
+        // wrapper.parser.parse(symbols);
     }
 }

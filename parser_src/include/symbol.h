@@ -6,6 +6,7 @@
 #include <cereal/types/unordered_set.hpp>
 // non-linux systems need <string> as not always included by <unordered_set>
 #include <string>
+#include "ast/syntax_tree.hpp"
 
 /// @brief A symbol is a terminal or non-terminal symbol.
 class Symbol
@@ -13,11 +14,16 @@ class Symbol
 public:
     Symbol();
     Symbol(std::string name, bool isTerminal, int id);
+    Symbol(std::string name, bool isTerminal, int id, int intValue);
+    Symbol(std::string name, bool isTerminal, int id, std::string stringValue);
     bool operator==(const Symbol &other) const;
     std::string humanReadableName;
+    int intValue;
+    std::string stringValue;
     bool isTerminal;
     static int getId();
     int id;
+    std::shared_ptr<ASTGen::SyntaxTreeNode> syntaxTreeNode;
     template<class Archive>
     void serialize(Archive & archive)
     {
@@ -44,7 +50,8 @@ class Terminal : public Symbol
 public:
     Terminal();
     Terminal(std::string name, Token token, int id);
-
+    Terminal(std::string name, Token token, int id, int intValue);
+    Terminal(std::string name, Token token, int id, std::string stringValue);
 private:
     Token token;
 };
