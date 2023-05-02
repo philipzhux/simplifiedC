@@ -1,0 +1,2 @@
+Input: 1
+Output: 15

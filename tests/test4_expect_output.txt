@@ -1,0 +1,16 @@
+This program is actually the Fibonacci sequence that F(n) = F(n-1) + F(n-2)
+
+Input: 1
+Output: 1
+
+Input: 2
+Output: 1
+
+Input: 3
+Output: 2
+
+Input: 10
+Output: 55
+
+Input: 100
+Output: 16323
