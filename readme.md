@@ -6,7 +6,7 @@ An NFA regex engine is implemented for lexer, and a LR(1) table driven parser ge
 
 An one-pass code-gen is adopted and an AST is built on the fly in the middle of parsing. Then, code gen will be conducted on the root of AST,  which in effect perfroms a DFS on the tree to complete the code generations recursively. 
 
-As for symbol table and stack memory allocations, I adopts an approach similar to my previous project [MICRO Language Compiler](https://github.com/philipzhux/micro-compiler), using the same `SymEntry` structure (also for intermediate/temporary value). The compiler is limited and uses no more than 4 registers, leaving a lot of space for register allocation optimization (a possible approach is leave `SymEntry` in the generated code, which in effect becomes 3AC, and perform algorithms like graph coloring to schedule the allocations of register).
+As for symbol table and stack memory allocations, I adopt an approach similar to my previous project [MICRO Language Compiler](https://github.com/philipzhux/micro-compiler), using the same `SymEntry` structure (also for intermediate/temporary value). The compiler is limited and uses no more than 4 registers, leaving a lot of space for register allocation optimization (a possible approach is to leave `SymEntry` in the generated code, which in effect becomes 3AC, and perform algorithms like graph coloring to schedule the allocation of registers).
 
 ## Project Structure
 
