@@ -1,6 +1,10 @@
 # Simplified-C Compiler for MIPS
 
-This repository contains a C to MIPS compiler developed as a course project for the compiler course `CSC4180` at CUHK. The compiler translates a subset of the C language into MIPS assembly code, focusing on basic arithmetic, logical operations, control structures, and array operations.
+This repository contains a C to MIPS compiler developed as a course project for the compiler course `CSC4180` at CUHK. The compiler translates a subset of the C language into MIPS assembly code, focusing on basic arithmetic, logical operations, control structures, and array operations. 
+
+An NFA regex engine is implemented for lexer, and a LR(1) table driven parser generator (Parser class is an implementation of a bison-like parser generator) is implemented for parsing. Grammar.cpp is the user of Parser class, with grammar rules (productions) along with semantic roitines configured there, which builds the parser ready for parsing. An one-pass code-gen is adopted and an AST is built on the fly in the middle of parsing. Then code gen will be conducted on the root of AST which in effect perfrom a DFS on the tree to complete the code generations recursively. 
+
+As for symbol table and stack memory allocations, I adopts an approach similar to my previous project [MICRO Language Compiler](https://github.com/philipzhux/micro-compiler), using the same `SymEntry` structure (also for intermediate/temporary value). The compiler is limited and uses no more than 4 registers, leaving a lot of space for register allocation optimization (a possible approach is leave `SymEntry` in the generated code, which in effect becomes 3AC, and perform algorithms like graph coloring to schedule the allocations of register).
 
 ## Project Structure
 
