@@ -42,7 +42,7 @@ build/%.o: %.cpp
 .PHONY: clean
 
 clean:
-	rm -f $(PARSER_OBJ) $(AST_OBJ) $(COMPILER_EXE)
+	rm -f $(PARSER_OBJ) $(AST_OBJ) $(COMPILER_EXE) $(SCANNER_OBJ)
 # rm -f $(BUILDER_OBJ) $(PARSER_OBJ) $(BUILDER_EXE) $(PARSER_EXE)
 
 # build_from_scratch: clean $(BUILDER_EXE) parser_xml

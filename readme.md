@@ -84,6 +84,12 @@ make
 
 This will generate the `compiler` executable in the project root.
 
+*Please note that the CXX_STANDARD should be at least C++14 as `std::hash` function for `enum` type is not provided in C++11 (added since C++14, as was stated [here](https://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#2148)). An alternative is to manually provide specialization in C++11 as:*
+
+```cpp
+std::hash<std::underlying_type<Enum>::type>
+```
+
 ## Usage
 
 To compile a C source file, run the following command:
